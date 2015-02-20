@@ -1,7 +1,7 @@
 __author__ = 'ralphblanes, lawrencemoore'
 #from SimPy.Simulation import *
 import pandas
-import lib
+from Queue import PriorityQueue
 
 def createMap(filepath):
 
@@ -60,7 +60,7 @@ class Map_node:
         self.name = name
         self.isParkingLot = False
         #store heap
-        self.heap = queue.PriorityQueue(0)
+        self.heap = PriorityQueue(0)
         #have a field for whether it's an intersection or a parking lot
         #have a field for capacity 
 
