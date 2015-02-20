@@ -35,7 +35,7 @@ def createMap(filepath):
 
 class Campus_Map:
     def __init__(self, intersections_list, parking_lots,):
-        pass
+
 
 
 class Edge_Queues:
