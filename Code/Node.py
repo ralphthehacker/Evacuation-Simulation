@@ -1,4 +1,4 @@
-__author__ = 'ralphblanes'
+__author__ = 'ralphblanes, lawrencemoore'
 #from SimPy.Simulation import *
 import pandas
 def createMap(filepath):
@@ -21,8 +21,6 @@ def createMap(filepath):
         inter2 = traffic_obj['NameOfIntersection2']
         distance_between_nodes = traffic_obj['Distance']
 
-
-        end_coords = (traffic_obj['X2'],traffic_obj['Y2'])
         type = traffic_obj['Type']
 
 
@@ -43,19 +41,22 @@ class Map_node:
     Class: Map_node
     Description: contains a node that represents a Resource in the Georgia Tech Map. Resources can be either parking lots
     or traffic light intersections
-    :param Start point and end point of the object, type of the object
+    :param name
     '''
-    def __init__(self, start_coords, end_coords,type):
-        self.start_coords = start_coords
-        self.end_coords = end_coords
-        self.type = type
 
-        self.resource = None #SIMPY RESOURCE CREATION GOES HERE
+    def __init__(self, name):
+        self.name = name
+        self.isParkingLot = False
 
         #have a field for whether it's an intersection or a parking lot
         #have a field for capacity 
 
+class Parking_lot(Map_node):
+
+     def __init__(self, name, capacity):
+          self.isParkingLot = True
+          self.capacity = capacity
 
 
 #Change this
-createMap("/Users/ralphblanes/Documents/Computer Simulation(Vuduc)/Evacuation Simulation/Data/gtmap.csv")
+createMap("../GTMap.csv")

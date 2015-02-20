@@ -1,75 +1,71 @@
-NameOfIntersection1,NameOfIntersection2,distance(in yards)
-
-EXIT, Fowler10th, 400
-Fowler10th, McMamish, 350
-McMamish, McMamish.parking, 50
-McMamish, 6th, 400
-6th, 6thAndTechwood, 155
-6thAndTechwood, 5thAndTechwood, 150
-6th, Fowlernd5th, 150
+NameOfIntersection1,NameOfIntersection2,distance(inyards)
+EXIT,Fowler10th,400
+Fowler10th,McMamish,350
+McMamish,McMamish.parking,50
+McMamish,6th,400
+6th,6thAndTechwood,155
+6thAndTechwood,5thAndTechwood,150
+6th,Fowlernd5th,150
 FowlerAnd5th,5thAndTechwood,150
-FowlerAnd5th, 4thAndFowler, 105
-5thAndTechwood, TechwoodAndLamda, 75
-TechwoodAndLamda, TechwoodAndLamda.parking, 10
-4thAndFowler,TechwoodAnd4th, 130
-TechwoodAndLamda, TechwoodAnd4th, 50
-TechwoodAnd4th, BobbyDoddTech, 230
-BobbyDoddTech, NorthAveTech, 320
-NorthAveTech, NorthAveAlmostExit, 180
-NorthAveAlmostExit, NorthAveExit, 40
-NorthAveTech, Centinial, 120
-Centinial, Centinial.parking, 30
-4thAndFowler, FowlerInner, 200
-FowlerInner, FolwerInner.parking, 40
-FolwerInner, FowlerBobby, 110
-FowlerBobby, BobbyDoddTech, 80
-4thAndFowler, Frat.parking, 60
-
-Fowler10th, FamilyHousing, 220
-FamilyHousing, Family.parking, 10
-FamilyHounsing, 10thAndAtlantic, 70
-10thAndAtlantic, 10thAndState, 30
-10thAndAtlantic, AtlanticAndPeach, 30
-10thAndState, StateAndPeach, 30
-StateAndPeach, StateParkingEntrance, 110
-StateParkingEntrance, state.parking, 10
-StateParkingEntrance, StateFerst, 70
-AtlanticAndPeach, PeachFerst, 200
-StateFerst, PeachFerst, 30
-StateFerst, Howey.parking, 40
-AtlanticAndPeach, KlausStop, 210
-KlausStop, Klaus.parking, 25
-KlausStop, Cherry.parking, 75
-KlausStop, FowlerAnd5th, 220
-
-10thAndState, 10thAndDalney, 30
-10thAndDalney, DalneyInterParking, 110
-DalneyInterParking, Dalney.parking, 20
-DalneyInterParking, DalneyFerst, 80
-DalneyFerst, StateFerst, 115
-
-10thAndDalney, Firehouse, 330
-Firehouse, Firehouse.parking, 15
-Firehouse, 9thAndHempill, 175
-9thAndHempill, 8thAndHempill, 25
-8thAndHempill, 9th8th, 65
-8thAndHempill, HempillAndFerst, 70
-HempillAndFerst, DalneyFerst, 60
-9thAndHempill, 8thAndCurran, 95
-9thAndHempill, 9th8th, 20
-9th8th, 8thAndCurran, 70
-8thAndCurran, west.parking, 30
-9th8th, moreWest.parking, 5
-9th8th, turnerplace, 40
-turneplace, 6thAndFerst, 160
-6thAndFerst,HempillAndFerst, 65
-Firehouse, TechPkwCRC, 400
-TechPkwCRC, CRC.parking, 20
-6thAndFerst, IC, 210
-IC, IC.parking, 5
-IC, StudentCenter, 275
-IC, TechPkwCRC, 10
-StudentCenter,StudentCenter.parking, 10
-StudentCenter, Guggenheim, 260
-TechPkwCRC, Guggenheim, 330
-Guggenheim, NorthAveTech, 50
+FowlerAnd5th,4thAndFowler,105
+5thAndTechwood,TechwoodAndLamda,75
+TechwoodAndLamda,TechwoodAndLamda.parking,10
+4thAndFowler,TechwoodAnd4th,130
+TechwoodAndLamda,TechwoodAnd4th,50
+TechwoodAnd4th,BobbyDoddTech,230
+BobbyDoddTech,NorthAveTech,320
+NorthAveTech,NorthAveAlmostExit,180
+NorthAveAlmostExit,NorthAveExit,40
+NorthAveTech,Centinial,120
+Centinial,Centinial.parking,30
+4thAndFowler,FowlerInner,200
+FowlerInner,FolwerInner.parking,40
+FolwerInner,FowlerBobby,110
+FowlerBobby,BobbyDoddTech,80
+4thAndFowler,Frat.parking,60
+Fowler10th,FamilyHousing,220
+FamilyHousing,Family.parking,10
+FamilyHounsing,10thAndAtlantic,70
+10thAndAtlantic,10thAndState,30
+10thAndAtlantic,AtlanticAndPeach,30
+10thAndState,StateAndPeach,30
+StateAndPeach,StateParkingEntrance,110
+StateParkingEntrance,state.parking,10
+StateParkingEntrance,StateFerst,70
+AtlanticAndPeach,PeachFerst,200
+StateFerst,PeachFerst,30
+StateFerst,Howey.parking,40
+AtlanticAndPeach,KlausStop,210
+KlausStop,Klaus.parking,25
+KlausStop,Cherry.parking,75
+KlausStop,FowlerAnd5th,220
+10thAndState,10thAndDalney,30
+10thAndDalney,DalneyInterParking,110
+DalneyInterParking,Dalney.parking,20
+DalneyInterParking,DalneyFerst,80
+DalneyFerst,StateFerst,115
+10thAndDalney,Firehouse,330
+Firehouse,Firehouse.parking,15
+Firehouse,9thAndHempill,175
+9thAndHempill,8thAndHempill,25
+8thAndHempill,9th8th,65
+8thAndHempill,HempillAndFerst,70
+HempillAndFerst,DalneyFerst,60
+9thAndHempill,8thAndCurran,95
+9thAndHempill,9th8th,20
+9th8th,8thAndCurran,70
+8thAndCurran,west.parking,30
+9th8th,moreWest.parking,5
+9th8th,turnerplace,40
+turneplace,6thAndFerst,160
+6thAndFerst,HempillAndFerst,65
+Firehouse,TechPkwCRC,400
+TechPkwCRC,CRC.parking,20
+6thAndFerst,IC,210
+IC,IC.parking,5
+IC,StudentCenter,275
+IC,TechPkwCRC,10
+StudentCenter,StudentCenter.parking,10
+StudentCenter,Guggenheim,260
+TechPkwCRC,Guggenheim,330
+Guggenheim,NorthAveTech,50
