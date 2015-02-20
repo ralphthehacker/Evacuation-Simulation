@@ -14,8 +14,12 @@ def createMap(filepath):
         #Let's append all intersections to a dictionary(hashmap) and then give them to the GT MAP
         intersections = {}
 
-        #Getting necessary data to create nodes
-        start_coords = (traffic_obj['X1'],traffic_obj['Y1'])
+        #Getting intersection data and info
+        inter1 = traffic_obj['NameOfIntersection1']
+        inter2 = traffic_obj['NameOfIntersection2']
+        distance_between_nodes = traffic_obj['Distance']
+
+
         end_coords = (traffic_obj['X2'],traffic_obj['Y2'])
         type = traffic_obj['Type']
 
