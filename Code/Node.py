@@ -3,6 +3,8 @@ __author__ = 'ralphblanes'
 import pandas
 def createMap(filepath):
 
+    #parking lot nodes always ".parking" in the name
+
     #Processing data into a dataframe
     df = pandas.read_csv(filepath)
 
@@ -50,6 +52,8 @@ class Map_node:
 
         self.resource = None #SIMPY RESOURCE CREATION GOES HERE
 
+        #have a field for whether it's an intersection or a parking lot
+        #have a field for capacity 
 
 
 
