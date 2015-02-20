@@ -13,7 +13,8 @@ def createMap(filepath):
      df = pandas.read_csv(filepath)
 
      print df.columns.values
-     adjList = {}
+     exitingList = {}
+     enteringList = {}
      vertexList = {}
      parkingLots = []
      #Looping through dataframes
@@ -37,22 +38,23 @@ def createMap(filepath):
                   vert1 = Node(inter1, True)
              else:
                   vert1 = Node(inter1, False)
+
              vertexList[inter1] = vert1
         else:
              vert1 = vertexList[inter1]
 
         #repeat the process for the other vertexes
         if inter2 not in vertexList:
-             if ".parking" in inter2:
-                  vert2 = Parking_lot(inter2, randint(200, 300))
-                  parkingLots.append(vert2)
-             elif ".EXIT" in inter2:
-                  vert2 = Node(inter2, True)
-             else:
-                  vert2 = Node(inter2, False)
-             vertexList[inter2] = vert2
+            if ".parking" in inter2:
+                vert2 = Parking_lot(inter2, randint(200, 300))
+                parkingLots.append(vert2)
+            elif ".EXIT" in inter2:
+                 vert2 = Node(inter2, True)
+            else:
+                 vert2 = Node(inter2, False)
+            vertexList[inter2] = vert2
         else:
-             vert2 = vertexList[inter2]
+            vert2 = vertexList[inter2]
 
         forwardEdge = Edge(vert1, vert2, distance, direction)
         backwardsEdge = Edge(vert2, vert1, distance, flipDirection(direction))
@@ -60,28 +62,38 @@ def createMap(filepath):
         """Make a dictionary with the key equal the vertex, and value equal to another dictionary.
            The dictionary representing the value stores adjacent vertexes as the key and their edge as the value
         """
-        hello = adjList.keys()
-        print (vert1 in hello)
 
-        if vert1 not in adjList.keys():
-             new_dictionary = {}
-             new_dictionary[vert2] = forwardEdge
-             adjList[vert1] = new_dictionary
+        if vert1 not in exitingList.keys():
+            new_exit_dictionary = {}
+            new_exit_dictionary[vert2] = forwardEdge
+
+            new_enter_dictionary = {}
+            new_enter_dictionary[vert2] = backwardsEdge
+
+            exitingList[vert1] = new_exit_dictionary
+            enteringList[vert1] = new_enter_dictionary
         else:
-             current_dictionary = adjList[vert1]
-             current_dictionary[vert2] = forwardEdge
-             adjList[vert1] = current_dictionary
+            #deal with the exit list first
+            current_dictionary = exitingList[vert1]
+            current_dictionary[vert2] = forwardEdge
+            exitingList[vert1] = current_dictionary
+
+            #now deal with the
+            current_dictionary = enteringList[vert1]
+            current_dictionary[vert2] = backwardsEdge
+            exitingList[vert1] = current_dictionary
 
         """do the same in the inverse direction"""
-        if vert2 not in adjList.keys():
-             new_dictionary = {}
-             new_dictionary[vert1] = backwardsEdge
-             adjList[vert2] = new_dictionary
+        if vert2 not in exitingList.keys():
+            new_dictionary = {}
+            new_dictionary[vert1] = backwardsEdge
+            exitingList[vert2] = new_dictionary
         else:
-             current_dictionary = adjList[vert2]
-             current_dictionary[vert1] = backwardsEdge
-             adjList[vert2] = current_dictionary
-     return adjList
+            current_dictionary = exitingList[vert2]
+            current_dictionary[vert1] = backwardsEdge
+            exitingList[vert2] = current_dictionary
+
+     return exitingList,exitingList
 
 
 
@@ -94,6 +106,9 @@ class Edge:
           self.direction = direction
           self.capacity = ceil(distance / 4.5)
           self.currentCap = 0
+
+     def isFull(self):
+          return self.currentCap == self.capacity
 
 class Node:
 
@@ -109,7 +124,7 @@ class Node:
         self.isParkingLot = False
         self.isExit = isExit
         self.heap = PriorityQueue(0)
-
+        self.time = 0
 
 class Parking_lot(Node):
 
@@ -117,7 +132,6 @@ class Parking_lot(Node):
           self.name = name
           self.isParkingLot = True
           self.capacity = capacity
-          self.time = 0
 
 def flipDirection(direction):
      if (direction == "West"):
