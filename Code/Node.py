@@ -2,6 +2,7 @@ __author__ = 'ralphblanes'
 #from SimPy.Simulation import *
 import pandas
 def createMap(filepath):
+
     #Processing data into a dataframe
     df = pandas.read_csv(filepath)
 
@@ -16,6 +17,10 @@ def createMap(filepath):
         #Getting necessary data to create nodes
         start_coords = (traffic_obj['X1'],traffic_obj['Y1'])
         end_coords = (traffic_obj['X2'],traffic_obj['Y2'])
+        type = traffic_obj['Type']
+
+
+
 
         return
 
