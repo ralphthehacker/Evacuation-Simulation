@@ -82,6 +82,12 @@ def createMap(filepath):
              adjList[vert2] = current_dictionary
      return adjList
 
+
+class Campus_Map:
+    def __init__(self, intersections_list, parking_lots,):
+
+
+
 class Edge:
      #direction is from the starting node to the end node
      #capacity is distance (in yards) divided by the length of the average car ( which is 4.5)
