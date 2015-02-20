@@ -1,6 +1,8 @@
 __author__ = 'ralphblanes, lawrencemoore'
 #from SimPy.Simulation import *
 import pandas
+import lib
+
 def createMap(filepath):
 
     #parking lot nodes always ".parking" in the name
@@ -20,9 +22,10 @@ def createMap(filepath):
         inter1 = traffic_obj['NameOfIntersection1']
         inter2 = traffic_obj['NameOfIntersection2']
         distance_between_nodes = traffic_obj['Distance']
+        direction = traffic_obj['Direction']
+        forwardEdge = Edge_Queues()
 
         type = traffic_obj['Type']
-
 
 
 
@@ -31,9 +34,18 @@ def createMap(filepath):
 
 
 class Campus_Map:
-    def __init__(self, intersections_list,parking_lots,):
+    def __init__(self, intersections_list, parking_lots,):
         pass
 
+
+class Edge_Queues:
+     #direction is from the starting node to the end node
+     #capacity is distance (in yards) divided by the length of the average car ( which is 4.5)
+     def __init__(self, startVertex, endVertex, distance, direction):
+          self.startVertex = startVertex
+          self.endVertex = endVertex
+          self.direction = direction
+          self.capacity = distance / 4.5
 
 class Map_node:
 
@@ -47,7 +59,8 @@ class Map_node:
     def __init__(self, name):
         self.name = name
         self.isParkingLot = False
-
+        #store heap
+        self.heap = queue.PriorityQueue(0)
         #have a field for whether it's an intersection or a parking lot
         #have a field for capacity 
 
@@ -58,5 +71,4 @@ class Parking_lot(Map_node):
           self.capacity = capacity
 
 
-#Change this
 createMap("../GTMap.csv")
