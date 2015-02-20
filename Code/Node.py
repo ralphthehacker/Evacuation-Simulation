@@ -30,6 +30,7 @@ def createMap(filepath):
         if inter1 not in vertexList:
              #create the vertexes
              if ".parking" in inter1:
+                  #randomely generate a certain number of cars in each parking lot
                   vert1 = Parking_lot(inter1, randint(200, 300))
                   parkingLots.append(vert1)
              elif ".EXIT" in inter1:
@@ -83,10 +84,6 @@ def createMap(filepath):
      return adjList
 
 
-class Campus_Map:
-    def __init__(self, intersections_list, parking_lots,):
-
-
 
 class Edge:
      #direction is from the starting node to the end node
@@ -120,6 +117,7 @@ class Parking_lot(Node):
           self.name = name
           self.isParkingLot = True
           self.capacity = capacity
+          self.time = 0
 
 def flipDirection(direction):
      if (direction == "West"):
@@ -137,5 +135,3 @@ class workRequest:
           self.edge1 = edge1
           self.edge2 = edge2
           self.time = time
-
-createMap("../GTMap.csv")
