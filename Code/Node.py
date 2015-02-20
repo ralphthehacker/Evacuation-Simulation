@@ -17,6 +17,7 @@ def createMap(filepath):
      enteringList = {}
      vertexList = {}
      parkingLots = []
+     edgeList = []
      #Looping through dataframes
      for index, traffic_obj in df.iterrows():
         #Let's append all intersections to a dictionary(hashmap) and then give them to the GT MAP
@@ -58,15 +59,19 @@ def createMap(filepath):
 
         forwardEdge = Edge(vert1, vert2, distance, direction)
         backwardsEdge = Edge(vert2, vert1, distance, flipDirection(direction))
+        edgeList.append(forwardEdge)
+        edgeList.append(backwardsEdge)
 
         """Make a dictionary with the key equal the vertex, and value equal to another dictionary.
            The dictionary representing the value stores adjacent vertexes as the key and their edge as the value
         """
 
         if vert1 not in exitingList.keys():
+            #make the new exit dictionary
             new_exit_dictionary = {}
             new_exit_dictionary[vert2] = forwardEdge
 
+            #make the new enter dictionary
             new_enter_dictionary = {}
             new_enter_dictionary[vert2] = backwardsEdge
 
@@ -78,22 +83,36 @@ def createMap(filepath):
             current_dictionary[vert2] = forwardEdge
             exitingList[vert1] = current_dictionary
 
-            #now deal with the
+            #now deal with the entering list
             current_dictionary = enteringList[vert1]
             current_dictionary[vert2] = backwardsEdge
-            exitingList[vert1] = current_dictionary
+            enteringList[vert1] = current_dictionary
+
 
         """do the same in the inverse direction"""
         if vert2 not in exitingList.keys():
-            new_dictionary = {}
-            new_dictionary[vert1] = backwardsEdge
-            exitingList[vert2] = new_dictionary
+            #make the new exit dictionary
+            new_exit_dictionary = {}
+            new_exit_dictionary[vert1] = backwardsEdge
+
+            #make the new enter dictionary
+            new_enter_dictionary = {}
+            new_enter_dictionary[vert1] = forwardEdge
+
+            exitingList[vert2] = new_exit_dictionary
+            enteringList[vert2] = new_enter_dictionary
         else:
+            #deal with the exit list first
             current_dictionary = exitingList[vert2]
             current_dictionary[vert1] = backwardsEdge
             exitingList[vert2] = current_dictionary
 
-     return exitingList,exitingList
+            #now deal with the entering list
+            current_dictionary = enteringList[vert2]
+            current_dictionary[vert1] = forwardEdge
+            enteringList[vert2] = current_dictionary
+
+     return exitingList,enteringList
 
 
 
@@ -149,3 +168,5 @@ class workRequest:
           self.edge1 = edge1
           self.edge2 = edge2
           self.time = time
+
+adj_list = createMap("../GTMap.csv")
