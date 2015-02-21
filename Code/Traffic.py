@@ -40,9 +40,9 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
 
         # Check all nodes in the system first
         for Node in exit_list.keys():
-            print "Current Node is {}".format(Node)
-            print "The current Node has the {} type".format(Node)
-            Node.time += 1
+            # print "Current Node is {}".format(Node)
+            # print "The current Node has the {} type".format(Node)
+            #Node.time += 1
             updateWorkRequests(Node)
 
 
@@ -57,13 +57,15 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
                     adjacentEdge.currentCap += 1
                     Node.capacity -= 1
                     #reset the time.  15 seconds til the next car can leave
-                    Node.time = 0
+                    Node.time = 1
+                else:
+                    Node.time += 1
 
             #let the cars on the highway
 
             if Node.isExit:
-                print "I am an exit"
-                print "My name is {}".format(Node)
+                # print "I am an exit"
+                # print "My name is {}".format(Node)
 
                 #find the adjacent road
                 adjacentInfo = enter_list[Node]
@@ -74,17 +76,18 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
                 if (not adjacentEdge.isFull()) and (Node.time % timeToEnterHighway == 0):
                     adjacentEdge.currentCap -= 1
                     #reset the time.  15 seconds til the next car can leave
-                    Node.time = 0
-
+                    Node.time = 1
+                else:
+                    Node.time += 1
 
 
             #If there are cars in the queue, Make requests at a local heap
 
             roadsLeaving = exit_list[Node]
             carsEntering = enter_list[Node]
-            print "Those are getting inside of me".format(carsEntering)
-            print("")
-            print "I'm spitting these".format(roadsLeaving)
+            # print "Those are getting inside of me".format(carsEntering)
+            # print("")
+            # print "I'm spitting these".format(roadsLeaving)
 
             """Call heuristic to file work requests.
             Then, we check to see if any work request can be fullfiled by "peeking" at the top of the heap and seeing if a time reaches zero
@@ -98,7 +101,7 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
             print "My best choices are {}".format(choiceList)
 
             for request in choiceList:
-                print( "I am a request and my name is {}".format(request))
+                #print( "I am a request and my name is {}".format(request))
                 #Add to the heap
                 Node.heap.put(request)
 
@@ -107,9 +110,9 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
             #Then update time
             #look at the heap contents
             content = Node.heap.get()
-            print("My cute tiny heap is {}".format(content))
-            print ""
-            print("Right now my time is {}".format(content.time))
+            # print("My cute tiny heap is {}".format(content))
+            # print ""
+            # print("Right now my time is {}".format(content.time))
             #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
             if content.time <= 0:
                 executeWorkRequestOrder(content)
