@@ -173,6 +173,6 @@ class workRequest:
           self.edge2 = edge2
           self.time = 20 + edge1.currentCap/edge1.capacity
      def __cmp(self,other):
-     	return cmp(self.priority,other.priority)
+     	return cmp(self.time,other.time)
 
 adj_list = createMap("../GTMap.csv")
