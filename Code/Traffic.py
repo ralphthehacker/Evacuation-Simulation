@@ -122,19 +122,19 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
                 Node.heap.put(content)
 
 
-            #check if we're empty
-            allEmpty = True
-            numPeople = 0
-            for edge in edgeList:
-                numPeople += edge.currentCap
-                if edge.currentCap is not 0:
-                    allEmpty = False
-            if numPeople == 0:
-                simulation_active = False
+        #check if we're empty
+        allEmpty = True
+        numPeople = 0
+        for edge in edgeList:
+            numPeople += edge.currentCap
+            if edge.currentCap is not 0:
+                allEmpty = False
+        if numPeople == 0:
+            simulation_active = False
 
-            if not allEmpty:
-                print numPeople
-            time += 1
+        if not allEmpty:
+            print numPeople
+        time += 1
 
 
 '''
