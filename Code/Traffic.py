@@ -1,4 +1,5 @@
-from Node import createMap
+import random
+from Node import createMap, workRequest
 
 __author__ = 'ralphblanes, lmoore44'
 import Queue
@@ -7,9 +8,13 @@ import Node.py
 This is the main simulation class. She'll take an adjacency list and run the simulation based on it.
 You can also change the update time through the clock_tick_time parameter(default = 2s)
 '''
-def simulate(adj_list, clock_tick_time = 2):
+def simulate(exit_list, enter_list,edgeList, clock_tick_time = 2,algorithm = "Police Officers"):
     #Adjacency lists are stored in the form Node, {adjacent nodes, edge between them}
-    adj_list = createMap("../GTMap.csv")
+
+
+    '''
+    TODO
+    '''
 
     #preprocessing step: Allows us to change the distribution of cars in an adjacency list
     change_distribution()
@@ -30,19 +35,20 @@ def simulate(adj_list, clock_tick_time = 2):
     #While the simulation is running
     while simulation_active:
 
-        #update all the requests
-        update_heap
 
 
         # Check all nodes in the system first
-        for Node in adj_list.keys():
+        for Node in exit_list.keys():
             Node.time += 1
+            updateWorkRequests(Node)
+
 
             #update the parking lot behavior: exit if possible and update capacity
             if Node.isParkingLot:
                 #find the adjacent road
-                adjacentInfo = adj_list[Node]
+                adjacentInfo = exit_list[Node]
                 adjacentEdge = adjacentInfo.values()
+
                 #make sure the road is not full and that it's not too soon to leave
                 if (not adjacentEdge.isFull()) and (Node.time % timeToLeaveParkingLot == 0):
                      adjacentEdge.currentCap += 1
@@ -51,33 +57,77 @@ def simulate(adj_list, clock_tick_time = 2):
                      Node.time = 0
 
             #let the cars on the highway
+
             if Node.isExit:
+
                 #find the adjacent road
-                adjacentInfo = adj_list[Node]
+                adjacentInfo = enter_list[Node]
                 adjacentEdge = adjacentInfo.values()
 
 
-            #If there are cars in the queue, process
-            if Node.capacity !=0 :
+                #Get nodes connected to exit
+                adjacentEdge = adjacentInfo.values()
 
-                #Get all possible requests and compute the best heuristic at that time
-                possible_requests = adj_list[Node]
-                best_path = compute_heuristic(possible_requests) #Get the best path
-                request_time_heap.put(best_path) #And put it in the  priority queue
-
-                #Now update the heap based on the clock ticks:
-                request_time_heap = update_heap(request_time_heap,clock_tick_time)
-
-                #And get the values where the time request is 0
-                update_adjacency_list(adj_list,request_time_heap)
+                #make sure the road is not full and that it's not too soon to leave
+                if (not adjacentEdge.isFull()) and (Node.time % timeToEnterHighway == 0):
+                     adjacentEdge.currentCap -= 1
+                     Node.capacity += 1
+                     #reset the time.  15 seconds til the next car can leave
+                     Node.time = 0
 
 
 
+            #If there are cars in the queue, Make requests at a local heap
+
+            roadsLeaving = exit_list[Node]
+            carsEntering = enter_list[Node]
+
+
+            """Call heuristic to file work requests.
+            Then, we check to see if any work request can be fullfiled by "peeking" at the top of the heap and seeing if a time reaches zero
+            Assuming at least one does reach zero, we execute exactly one work request.
+            Don't forget to update all the work requests at each iteation by calling update_heap(or a modified version)
+            """
+
+            #Get the best choice for every path leading to the intersection(local optimi
+            choiceList = compute_heuristic(carsEntering, roadsLeaving, algorithm)
+
+            for request in choiceList:
+                #Add to the heap
+                Node.heap.put(request)
+
+            #look at the heap contents
+
+            #Then update time
+            #look at the heap contents
+            content = Node.heap.get()
+
+            #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
+            if content.time <= 0:
+                executeWorkRequestOrder(content)
+            else:
+                Node.heap.push(content)
+
+            #check if we're empty
+        	allEmpty = True
+            for edge in edgeList:
+                if edge.capacity is not 0:
+                    allEmpty = False
+                if allEmpty:
+                    simulation_active = False
+            time += 1
 
 
 
 
-    time += 1
+
+
+
+
+
+'''
+CHECK HERE FOR POSSIBLE BUGS. PYTHON may copy objects instead of keeping pointers
+'''
 
 def update_adjacency_list(adj_list,heap):
     pass
@@ -86,7 +136,15 @@ def update_adjacency_list(adj_list,heap):
 '''
 Makes clock ticks in the heap
 '''
-def update_heap(request_time_heap, clock_tick_time):
+
+def change_distribution(adj_list):
+    pass
+
+def executeWorkRequestOrder(order):
+    order.edge1.currentCap -= 1
+    order.edge2.currentCap += 1
+
+def updateWorkRequests(Node,request_time_heap):
     # Creating a list that stores all elements
     heap_list = []
     new_heap = Queue.PriorityQueue
@@ -97,28 +155,70 @@ def update_heap(request_time_heap, clock_tick_time):
 
     #And subtracting time from them
     for el in heap_list:
-        el.time -= clock_tick_time
+        el.time -= 1
         if el.time <= 0:
             el = 0
         new_heap.put(el)
     return new_heap
 
-
-
-
-def change_distribution(adj_list):
-    pass
-
-
-
-def compute_heuristic(request_dict,algorithm = "Police Officer"):
+def compute_heuristic(carsEntering, roadsLeaving, algorithm = "Police Officer"):
     '''
 
     :param request_dict:
     :param algorithm:
     :return: The best choice in that dictionary for that request
     '''
+
     if algorithm == "Police Officer":
-        pass
+    #Checking all possible paths
+        work_list = []
+
+        # For any given entering path
+        for enter_road in carsEntering:
+            temp_list = []
+
+            # Check the possible next paths
+            for destination_road in roadsLeaving :
+                if destination_road.direction.lower() != "west":
+
+                    #And issue work orders to them
+                    work_order = workRequest(enter_road,destination_road)
+                    temp_list.append(work_order)
+
+            #Sort to get the fastest path
+            temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
+
+            #Get the fastest path and append it to the list of best choices
+            work_list.append(temp_list[0])
+
+        #and returning a list with the correspondent best values for each edge
+        return work_list
     else:
-        pass
+        work_list = []
+        #Greedy approach - people blindly try to go east.  Only go north or south if the east direction doesn't exist.
+        #First determine if we can go East
+        canGoEast = False
+        for road in roadsLeaving.values():
+            if road.direction == "East":
+                canGoEast = True
+                eastRoad = road
+
+        #If we can go East, then check if it's not full
+        if canGoEast and not eastRoad.isFull():
+            #Now we file a work request for each road
+            for incomingCar in carsEntering.values():
+                work_list.append(workRequest(incomingCar, eastRoad))
+
+        #check if we can't go east at all
+        elif not canGoEast:
+            numOptions = roadsLeaving.values()
+            for incomingCar in carsEntering.values():
+                #randomely pick between north or south
+            	work_list.append(workRequest(incomingCar, roadsLeaving.values()[random.randint(0,numOptions)]))
+        #otherwise, we're done
+		return work_list
+
+
+def main():
+    (exiting_list,entering_list) = createMap("../GTMap.csv")
+    simulate(exiting_list, entering_list, clock_tick_time = 2)

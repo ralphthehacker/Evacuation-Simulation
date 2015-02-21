@@ -163,10 +163,12 @@ def flipDirection(direction):
           return "North"
 
 class workRequest:
-     #by default, one car goes
+     #by default, car goes from edge 1 to edge 2.  Remember, this won't be generated if edge 2 has no capacity
      def __init__(self,edge1, edge2, time):
           self.edge1 = edge1
           self.edge2 = edge2
-          self.time = time
+          self.time = 20 + edge1.currentCap/edge1.capacity
+     def __cmp(self,other):
+     	return cmp(self.priority,other.priority)
 
 adj_list = createMap("../GTMap.csv")
