@@ -99,8 +99,8 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
             choiceList = compute_heuristic(carsEntering, roadsLeaving, algorithm)
             if (choiceList == []):
                 print "Hello"
-            print ""
-            print "My best choices are {}".format(choiceList)
+            # print ""
+            # print "My best choices are {}".format(choiceList)
 
             for request in choiceList:
                 #print( "I am a request and my name is {}".format(request))
@@ -124,13 +124,15 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
 
             #check if we're empty
             allEmpty = True
+            numPeople = 0
             for edge in edgeList:
-                if edge.capacity is not 0:
+                numPeople += edge.currentCap
+                if edge.currentCap is not 0:
                     allEmpty = False
                 if allEmpty:
                     simulation_active = False
-            if allEmpty:
-                print "hellod"
+            if not allEmpty:
+                print numPeople
             time += 1
 
 
