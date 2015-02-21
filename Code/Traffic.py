@@ -10,7 +10,7 @@ You can also change the update time through the clock_tick_time parameter(defaul
 '''
 
 
-def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Police Officers"):
+def simulate(exit_list, enter_list, edgeList, parkingLots, clock_tick_time=2, algorithm="Police Officers"):
     # Adjacency lists are stored in the form Node, {adjacent nodes, edge between them}
 
 
@@ -123,19 +123,18 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
 
 
         #check if we're empty
-        allEmpty = True
         numPeople = 0
         for edge in edgeList:
             numPeople += edge.currentCap
-            if edge.currentCap is not 0:
-                allEmpty = False
+        for lot in parkingLots:
+            numPeople += lot.capacity
         if numPeople == 0:
             simulation_active = False
 
-        if not allEmpty:
-            print numPeople
-        time += 1
 
+        #print numPeople
+        time += 1
+    print time
 
 '''
 CHECK HERE FOR POSSIBLE BUGS. PYTHON may copy objects instead of keeping pointers
@@ -156,7 +155,7 @@ def change_distribution(adj_list):
 
 
 def executeWorkRequestOrder(order):
-    print "Car going from {} to {}".format(order.edge1,order.edge2)
+    #print "Car going from {} to {}".format(order.edge1,order.edge2)
     order.edge1.currentCap -= 1
     order.edge2.currentCap += 1
 
@@ -258,8 +257,8 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm="Police Officer"):
 
 
 def main():
-    (exiting_list, entering_list, edge_list) = createMap("../GTMap.csv")
-    simulate(exiting_list, entering_list, edge_list, clock_tick_time=2)
+    (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv")
+    simulate(exiting_list, entering_list, edge_list, parkingLots, clock_tick_time=2)
 
 
 main()
