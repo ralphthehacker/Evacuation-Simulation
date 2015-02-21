@@ -97,6 +97,8 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
 
             #Get the best choice for every path leading to the intersection(local optimi
             choiceList = compute_heuristic(carsEntering, roadsLeaving, algorithm)
+            if (choiceList == []):
+                print "Hello"
             print ""
             print "My best choices are {}".format(choiceList)
 
@@ -120,13 +122,15 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
                 Node.heap.put(content)
 
 
-                #check if we're empty
-                allEmpty = True
+            #check if we're empty
+            allEmpty = True
             for edge in edgeList:
                 if edge.capacity is not 0:
                     allEmpty = False
                 if allEmpty:
                     simulation_active = False
+            if allEmpty:
+                print "hellod"
             time += 1
 
 
@@ -221,7 +225,7 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm="Police Officer"):
         #First determine if we can go East
         canGoEast = False
         for road in roadsLeaving.values():
-            if road.direction == "East":
+            if road.direction == "East" and not (road.endVertex.isParkingLot or road.startVertex.isParkingLot):
                 canGoEast = True
                 eastRoad = road
 
