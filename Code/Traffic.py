@@ -186,8 +186,8 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
     :return: The best choice in that dictionary for that request
     '''
     if not carsEntering.values()[0].endVertex.isExit:
-        #the above condition checks if we're at the exit.  If so, no intersection guidance is needed; it will be picked up by the clock cycle
-
+        """the above condition checks if we're at the exit.  If so, no intersection guidance is needed; it will be picked up by the clock cycle
+        #also, check to see if the road you choose is full"""
         if algorithm == "Police Officer":
             # Checking all possible paths
             work_list = []
@@ -198,7 +198,9 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
 
                 # Check the possible next paths
                 for dest_road in roadsLeaving.values():
-                    if dest_road.direction.lower() != "west" and not (dest_road.endVertex.isParkingLot or dest_road.startVertex.isParkingLot):
+                    if dest_road.direction.lower() != "west" \
+                            and not (dest_road.endVertex.isParkingLot or dest_road.startVertex.isParkingLot):
+                            #and enter_road.currentCap > 0:
                         #And issue work orders to them
                         work_order = workRequest(enter_road, dest_road)
                         temp_list.append(work_order)
@@ -238,16 +240,19 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
             elif not canGoEast:
                 numOptions = roadsLeaving.values()
                 for incomingCar in carsEntering.values():
-                    #randomely pick between north or south
+                    #if incomingCar.currentCap > 0:
+                        #randomely pick between north or south
 
-                    # #class good_codingPractice()
-                    a = roadsLeaving.values()
-                    a = a[random.randint(0,len(numOptions)-1)]
-                    b = incomingCar
-                    work_list.append(workRequest(b, a))
-                    #otherwise, we're done
-
+                        # #class good_codingPractice()
+                        a = roadsLeaving.values()
+                        a = a[random.randint(0,len(numOptions)-1)]
+                        b = incomingCar
+                        work_list.append(workRequest(b, a))
+                        #otherwise, we're done
+        if work_list == []:
+            work_list = 0
         return work_list
+
     return 0
 
 def main():
