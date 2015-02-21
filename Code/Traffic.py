@@ -129,8 +129,9 @@ def simulate(exit_list, enter_list, edgeList, clock_tick_time=2, algorithm="Poli
                 numPeople += edge.currentCap
                 if edge.currentCap is not 0:
                     allEmpty = False
-                if allEmpty:
-                    simulation_active = False
+            if numPeople == 0:
+                simulation_active = False
+
             if not allEmpty:
                 print numPeople
             time += 1
