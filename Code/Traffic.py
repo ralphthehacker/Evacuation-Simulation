@@ -10,7 +10,7 @@ You can also change the update time through the clock_tick_time parameter(defaul
 '''
 
 
-def simulate(exit_list, enter_list, edgeList, parkingLots, clock_tick_time=2, algorithm="Police Officers"):
+def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick_time=2):
     # Adjacency lists are stored in the form Node, {adjacent nodes, edge between them}
 
 
@@ -128,11 +128,11 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, clock_tick_time=2, al
             numPeople += edge.currentCap
         for lot in parkingLots:
             numPeople += lot.capacity
-        if numPeople == 0:
+        if numPeople <= 0:
             simulation_active = False
 
 
-        #print numPeople
+        print numPeople
         time += 1
     print time
 
@@ -190,7 +190,7 @@ def updateWorkRequests(Node):
     return new_heap
 
 
-def compute_heuristic(carsEntering, roadsLeaving, algorithm="Police Officer"):
+def compute_heuristic(carsEntering, roadsLeaving, algorithm):
     '''
 
     :param request_dict:
@@ -258,7 +258,8 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm="Police Officer"):
 
 def main():
     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv")
-    simulate(exiting_list, entering_list, edge_list, parkingLots, clock_tick_time=2)
+    simulate(exiting_list, entering_list, edge_list, parkingLots, "chaos", clock_tick_time=2)
+    simulate(exiting_list, entering_list, edge_list, parkingLots, "Police Officer", clock_tick_time=2)
 
 
 main()
