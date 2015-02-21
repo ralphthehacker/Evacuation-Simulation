@@ -112,7 +112,7 @@ def createMap(filepath):
             current_dictionary[vert1] = forwardEdge
             enteringList[vert2] = current_dictionary
 
-     return exitingList,enteringList
+     return exitingList,enteringList,edgeList
 
 
 
@@ -151,6 +151,10 @@ class Parking_lot(Node):
           self.name = name
           self.isParkingLot = True
           self.capacity = capacity
+          self.time = 0
+          self.heap = PriorityQueue(0)
+          self.isExit = False
+
 
 def flipDirection(direction):
      if (direction == "West"):
@@ -164,7 +168,7 @@ def flipDirection(direction):
 
 class workRequest:
      #by default, car goes from edge 1 to edge 2.  Remember, this won't be generated if edge 2 has no capacity
-     def __init__(self,edge1, edge2, time):
+     def __init__(self,edge1, edge2):
           self.edge1 = edge1
           self.edge2 = edge2
           self.time = 20 + edge1.currentCap/edge1.capacity
