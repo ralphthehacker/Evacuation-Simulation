@@ -97,30 +97,27 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
             """
 
             #Get the best choice for every path leading to the intersection(local optimi
-            choiceList = compute_heuristic(carsEntering, roadsLeaving, algorithm)
-            if (choiceList == []):
-                print "Hello"
-            # print ""
-            # print "My best choices are {}".format(choiceList)
+            if not Node.isParkingLot:
+                choiceList = compute_heuristic(carsEntering, roadsLeaving, algorithm)
+                if choiceList:
+                    for request in choiceList:
+                        #print( "I am a request and my name is {}".format(request))
+                        #Add to the heap
+                        Node.heap.put(request)
 
-            for request in choiceList:
-                #print( "I am a request and my name is {}".format(request))
-                #Add to the heap
-                Node.heap.put(request)
+                    #look at the heap contents
 
-            #look at the heap contents
-
-            #Then update time
-            #look at the heap contents
-            content = Node.heap.get()
-            # print("My cute tiny heap is {}".format(content))
-            # print ""
-            # print("Right now my time is {}".format(content.time))
-            #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
-            if content.time <= 0:
-                executeWorkRequestOrder(content)
-            else:
-                Node.heap.put(content)
+                    #Then update time
+                    #look at the heap contents
+                    content = Node.heap.get()
+                    # print("My cute tiny heap is {}".format(content))
+                    # print ""
+                    # print("Right now my time is {}".format(content.time))
+                    #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
+                    if content.time <= 0:
+                        executeWorkRequestOrder(content)
+                    else:
+                        Node.heap.put(content)
 
 
         #check if we're empty
@@ -188,72 +185,70 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
     :param algorithm:
     :return: The best choice in that dictionary for that request
     '''
+    if not carsEntering.values()[0].endVertex.isExit:
+        #the above condition checks if we're at the exit.  If so, no intersection guidance is needed; it will be picked up by the clock cycle
 
-    if algorithm == "Police Officer":
-        # Checking all possible paths
-        work_list = []
+        if algorithm == "Police Officer":
+            # Checking all possible paths
+            work_list = []
 
-        # For any given entering path
-        for enter_road in carsEntering.values():
-            temp_list = []
+            # For any given entering path
+            for enter_road in carsEntering.values():
+                temp_list = []
 
-            # Check the possible next paths
-            untouched = True
-            for dest_road in roadsLeaving.values():
-                if dest_road.direction.lower() != "west" and not (dest_road.endVertex.isParkingLot or dest_road.startVertex.isParkingLot):
-                    #And issue work orders to them
-                    work_order = workRequest(enter_road, dest_road)
-                    temp_list.append(work_order)
+                # Check the possible next paths
+                for dest_road in roadsLeaving.values():
+                    if dest_road.direction.lower() != "west" and not (dest_road.endVertex.isParkingLot or dest_road.startVertex.isParkingLot):
+                        #And issue work orders to them
+                        work_order = workRequest(enter_road, dest_road)
+                        temp_list.append(work_order)
 
-            #Sort to get the fastest path
-            #temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
-            minTime = sys.maxint
-            minRequest = 0
-            for request in temp_list:
-                if request.time < minTime:
-                    minTime = request.time
-                    minRequest = request
-            if not minRequest:
-                print False
-            #Get the fastest path and append it to the list of best choices
-            work_list.append(minRequest)
+                #Sort to get the fastest path
+                #temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
+                minTime = sys.maxint
+                minRequest = 0
+                for request in temp_list:
+                    if request.time < minTime:
+                        minTime = request.time
+                        minRequest = request
+                if not minRequest:
+                    print False
+                #Get the fastest path and append it to the list of best choices
+                work_list.append(minRequest)
 
-        #and returning a list with the correspondent best values for each edge
-        return work_list
-    else:
-        work_list = []
-        # Greedy approach - people blindly try to go east.  Only go north or south if the east direction doesn't exist.
-        #First determine if we can go East
-        canGoEast = False
-        for road in roadsLeaving.values():
-            if road.direction == "East" and not (road.endVertex.isParkingLot or road.startVertex.isParkingLot):
-                canGoEast = True
-                eastRoad = road
+            #and returning a list with the correspondent best values for each edge
+            return work_list
+        else:
+            work_list = []
+            # Greedy approach - people blindly try to go east.  Only go north or south if the east direction doesn't exist.
+            #First determine if we can go East
+            canGoEast = False
+            for road in roadsLeaving.values():
+                if road.direction == "East" and not (road.endVertex.isParkingLot or road.startVertex.isParkingLot):
+                    canGoEast = True
+                    eastRoad = road
 
-        #If we can go East, then check if it's not full
-        if canGoEast and not eastRoad.isFull():
-            #Now we file a work request for each road
-            for incomingCar in carsEntering.values():
-                work_list.append(workRequest(incomingCar, eastRoad))
+            #If we can go East, then check if it's not full
+            if canGoEast and not eastRoad.isFull():
+                #Now we file a work request for each road
+                for incomingCar in carsEntering.values():
+                    work_list.append(workRequest(incomingCar, eastRoad))
 
-        #check if we can't go east at all
-        elif not canGoEast:
-            numOptions = roadsLeaving.values()
-            for incomingCar in carsEntering.values():
-                #randomely pick between north or south
+            #check if we can't go east at all
+            elif not canGoEast:
+                numOptions = roadsLeaving.values()
+                for incomingCar in carsEntering.values():
+                    #randomely pick between north or south
 
-                # #class good_codingPractice()
-                a = roadsLeaving.values()
-                a = a[random.randint(0,len(numOptions)-1)]
-                b = incomingCar
-                work_list.append(workRequest(b, a))
-                #otherwise, we're done
-
-
-
+                    # #class good_codingPractice()
+                    a = roadsLeaving.values()
+                    a = a[random.randint(0,len(numOptions)-1)]
+                    b = incomingCar
+                    work_list.append(workRequest(b, a))
+                    #otherwise, we're done
 
         return work_list
-
+    return 0
 
 def main():
     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv")
