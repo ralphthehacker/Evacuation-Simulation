@@ -1,4 +1,5 @@
 import random
+import sys
 from Node import createMap, workRequest
 
 __author__ = 'ralphblanes, lmoore44'
@@ -193,21 +194,29 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
         work_list = []
 
         # For any given entering path
-        for enter_road in carsEntering:
+        for enter_road in carsEntering.values():
             temp_list = []
 
             # Check the possible next paths
-            for destination_road in roadsLeaving:
-                if destination_road.direction.lower() != "west":
+            untouched = True
+            for dest_road in roadsLeaving.values():
+                if dest_road.direction.lower() != "west" and not (dest_road.endVertex.isParkingLot or dest_road.startVertex.isParkingLot):
                     #And issue work orders to them
-                    work_order = workRequest(enter_road, destination_road)
+                    work_order = workRequest(enter_road, dest_road)
                     temp_list.append(work_order)
 
             #Sort to get the fastest path
-            temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
-
+            #temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
+            minTime = sys.maxint
+            minRequest = 0
+            for request in temp_list:
+                if request.time < minTime:
+                    minTime = request.time
+                    minRequest = request
+            if not minRequest:
+                print False
             #Get the fastest path and append it to the list of best choices
-            work_list.append(temp_list[0])
+            work_list.append(minRequest)
 
         #and returning a list with the correspondent best values for each edge
         return work_list
@@ -248,7 +257,7 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
 
 def main():
     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv")
-    simulate(exiting_list, entering_list, edge_list, parkingLots, "chaos", clock_tick_time=2)
+    #simulate(exiting_list, entering_list, edge_list, parkingLots, "chaos", clock_tick_time=2)
     simulate(exiting_list, entering_list, edge_list, parkingLots, "Police Officer", clock_tick_time=2)
 
 
