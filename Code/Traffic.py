@@ -176,16 +176,6 @@ def updateWorkRequests(Node):
         if el.time <= 0:
             el = 0
         new_heap.put(el)
-        # try:
-        #     new_heap.put(el)
-        # except:
-        #
-        #     # print ""
-        #     # print "The element that fucked up was {}".format(el)
-        #     # print "The new heap was:"
-        #     # print new_heap
-        #     # print "The old heap was:"
-        #     # print Node.heap
 
     return new_heap
 

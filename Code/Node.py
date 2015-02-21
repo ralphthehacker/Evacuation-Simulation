@@ -112,7 +112,7 @@ def createMap(filepath):
             current_dictionary[vert1] = forwardEdge
             enteringList[vert2] = current_dictionary
 
-     return exitingList,enteringList,edgeList
+     return exitingList,enteringList,edgeList, parkingLots
 
 
 
