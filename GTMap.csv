@@ -9,7 +9,7 @@ McMamish,6th,400,South
 FowlerAnd5th,5thAndTechwood,150,East
 FowlerAnd5th,4thAndFowler,105,South
 5thAndTechwood,TechwoodAndLamda,75,South
-5thAndTechwood,5th.EXIT,30
+5thAndTechwood,5th.EXIT,30,East
 TechwoodAndLamda,TechwoodAndLamda.parking,10,East
 4thAndFowler,TechwoodAnd4th,130,East
 TechwoodAndLamda,TechwoodAnd4th,50,South
