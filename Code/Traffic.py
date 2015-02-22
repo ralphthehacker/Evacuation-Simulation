@@ -34,17 +34,15 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
     time = 0
 
     #some constants
-    timeToLeaveParkingLot = 15
-    timeToEnterHighway = 40
+    timeToLeaveParkingLot = 10
+    timeToEnterHighway = 20
 
     #While the simulation is running
     while simulation_active:
 
         # Check all nodes in the system first
         for Node in exit_list.keys():
-            # print "Current Node is {}".format(Node)
-            # print "The current Node has the {} type".format(Node)
-            #Node.time += 1
+            #update the time of all the work requests
             updateWorkRequests(Node)
 
 
@@ -55,7 +53,7 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 adjacentEdge = adjacentInfo.values()[0]
 
                 #make sure the road is not full and that it's not too soon to leave
-                if (not adjacentEdge.isFull()) and (Node.time % timeToLeaveParkingLot == 0):
+                if (not adjacentEdge.isFull()) and (Node.time % timeToLeaveParkingLot == 0) and Node.capacity:
                     adjacentEdge.currentCap += 1
                     Node.capacity -= 1
                     #reset the time.  15 seconds til the next car can leave
@@ -74,13 +72,14 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 #Get nodes connected to exit
                 adjacentEdge = adjacentInfo.values()[0]
 
-                #make sure the road is not full and that it's not too soon to leave
-                if (not adjacentEdge.isFull()) and (Node.time == 0):
-                    adjacentEdge.currentCap -= 1
-                    #The more crowded the road, the long it takes to exit
-                    Node.time = ceil(timeToEnterHighway - (timeToEnterHighway - 1) * (1 - (abs(adjacentEdge.currentCap) / adjacentEdge.capacity)))
-                else:
-                    Node.time -= 1
+                #make sure the road has cars and that it's not too soon to leave
+                if adjacentEdge.currentCap:
+                    if (Node.time == 0):
+                        adjacentEdge.currentCap -= 1
+                        #The more crowded the road, the long it takes to exit
+                        Node.time = ceil(timeToEnterHighway - (timeToEnterHighway - 1) * (1 - (abs(adjacentEdge.currentCap) / adjacentEdge.capacity))) + 1
+                    else:
+                        Node.time -= 1
 
 
             #If there are cars in the queue, Make requests at a local heap
@@ -106,15 +105,17 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                         #Add to the heap
                         Node.heap.put(request)
 
-                    #look at the heap contents
-                    #Then update time
-    
-                    content = Node.heap.get()
-                    #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
-                    if content.time <= 0:
-                        executeWorkRequestOrder(content)
-                    else:
-                        Node.heap.put(content)
+
+                #look at the time stamps of the top request on the heap
+                content = Node.heap.get()
+
+                #if the time stamp is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
+                if content.time == 0:
+                    executeWorkRequestOrder(content)
+                elif content.time <0:
+                    print "time less than zero"
+                else:
+                    Node.heap.put(content)
 
 
         #check if we're empty
@@ -127,17 +128,13 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
             simulation_active = False
 
 
-        print numPeople
+        print"People left: ", numPeople, ". And the time so far: ", time, " seconds"
         time += 1
     print time
 
 '''
 CHECK HERE FOR POSSIBLE BUGS. PYTHON may copy objects instead of keeping pointers
 '''
-
-
-def update_adjacency_list(adj_list, heap):
-    pass
 
 
 '''
@@ -156,23 +153,21 @@ def executeWorkRequestOrder(order):
 
 
 def updateWorkRequests(Node):
-    # Creating a list that stores all elements
-    heap_list = []
-    new_heap = Queue.PriorityQueue()
-    request_time_heap = Node.heap
 
-    # Getting elements from the heap
-    while request_time_heap.qsize() > 0:
-        heap_list.append(request_time_heap.get())
+    #make sure there's at least one element in the heap
+    if Node.heap.queue:
+        heap_list = []
+        # Getting elements from the heap
+        while Node.heap.qsize() > 0:
+            heap_list.append(Node.heap.get())
 
-    #And subtracting time from them
-    for el in heap_list:
-        el.time -= 1
-        if el.time <= 0:
-            el = 0
-        new_heap.put(el)
+        #And subtracting time from them
+        for order in heap_list:
+            order.time -= 1
+            if order.time <= 0:
+                order.time = 0
 
-    return new_heap
+            Node.heap.put(order)
 
 
 def compute_heuristic(carsEntering, roadsLeaving, algorithm):
@@ -192,39 +187,33 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
 
             # For any given entering path
             for enter_road in carsEntering.values():
-                temp_list = []
+                #make sure the road isn't empty
+                if enter_road.currentCap > 0:
 
-                # Check the possible next paths
-                for dest_road in roadsLeaving.values():
-                    if dest_road.direction.lower() != "west" \
-                            and not (dest_road.endVertex.isParkingLot or dest_road.startVertex.isParkingLot):
-                            #and enter_road.currentCap > 0:
-                        #And issue work orders to them
-                        work_order = workRequest(enter_road, dest_road)
-                        temp_list.append(work_order)
+                    # Check the possible next paths for the least people in it
+                    leastRatio = 1.0
+                    bestExit = 0
+                    for dest_road in roadsLeaving.values():
+                        #check if the raod is
+                        if dest_road.direction.lower() != "west" and roadEligible(dest_road):
+                            #check if this road is less empty
+                            if dest_road.currentCap/dest_road.capacity < leastRatio:
+                                bestExit = dest_road
+                                leastRatio = dest_road.currentCap/dest_road.capacity
+                            #And issue work orders to them
 
-                #Sort to get the fastest path
-                #temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
-                minTime = sys.maxint
-                minRequest = 0
-                for request in temp_list:
-                    if request.time < minTime:
-                        minTime = request.time
-                        minRequest = request
-                if not minRequest:
-                    print False
-                #Get the fastest path and append it to the list of best choices
-                work_list.append(minRequest)
+                    #Get the fastest path (assuming one exists) and append it to the list of best choices
+                    if bestExit:
+                        minRequest = workRequest(enter_road, bestExit)
+                        work_list.append(minRequest)
 
-            #and returning a list with the correspondent best values for each edge
-            return work_list
         else:
             work_list = []
             # Greedy approach - people blindly try to go east.  Only go north or south if the east direction doesn't exist.
             #First determine if we can go East
             canGoEast = False
             for road in roadsLeaving.values():
-                if road.direction == "East" and not (road.endVertex.isParkingLot or road.startVertex.isParkingLot):
+                if road.direction == "East" and roadEligible(road):
                     canGoEast = True
                     eastRoad = road
 
@@ -237,21 +226,23 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
             #check if we can't go east at all
             elif not canGoEast:
                 numOptions = roadsLeaving.values()
-                for incomingCar in carsEntering.values():
-                    #if incomingCar.currentCap > 0:
-                        #randomely pick between north or south
+                for car in carsEntering.values():
+                    if car.capacity > 0:
 
-                        # #class good_codingPractice()
-                        a = roadsLeaving.values()
-                        a = a[random.randint(0,len(numOptions)-1)]
-                        b = incomingCar
-                        work_list.append(workRequest(b, a))
+                        #randomely pick between north or south
+                        exit = numOptions[random.randint(0,len(numOptions)-1)]
+                        work_list.append(workRequest(car, exit))
                         #otherwise, we're done
-        if work_list == []:
+
+        if not work_list:
             work_list = 0
         return work_list
 
     return 0
+
+#checks if the road contains a parking lot or is full
+def roadEligible(road):
+    return not ( road.startVertex.isParkingLot) and road.currentCap < road.capacity
 
 def main():
     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv")
@@ -260,3 +251,18 @@ def main():
 
 
 main()
+
+
+ #         work_order = workRequest(enter_road, dest_road)
+                #         temp_list.append(work_order)
+                #
+                # #Sort to get the fastest path
+                # #temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
+                # minTime = sys.maxint
+                # minRequest = 0
+                # for request in temp_list:
+                #     if request.time < minTime:
+                #         minTime = request.time
+                #         minRequest = request
+                # if not minRequest:
+                #     print False
