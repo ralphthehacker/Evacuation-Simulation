@@ -146,6 +146,8 @@ def change_distribution(adj_list):
 
 def executeWorkRequestOrder(order):
     #print "Car going from {} to {}".format(order.edge1,order.edge2)
+    if (order.edge1.currentCap == 0):
+        print "work request coming from a road with zero cars"
     order.edge1.currentCap -= 1
     order.edge2.currentCap += 1
 
@@ -186,6 +188,12 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
             # For any given entering path
             for enter_road in carsEntering.values():
                 #make sure the road isn't empty
+
+                #debug if
+                if enter_road.startVertex.name == "Frat.parking":
+                    if enter_road.currentCap < 0:
+                        print "the problem starts here"
+
                 if enter_road.currentCap > 0:
 
                     # Check the possible next paths for the least people in it
@@ -204,7 +212,8 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
                     if bestExit:
                         minRequest = workRequest(enter_road, bestExit)
                         work_list.append(minRequest)
-
+                elif enter_road.currentCap < 0:
+                    print "negative car capacity"
         else:
             work_list = []
             # Greedy approach - people blindly try to go east.  Only go north or south if the east direction doesn't exist.
