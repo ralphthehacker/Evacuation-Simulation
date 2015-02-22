@@ -52,7 +52,7 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 adjacentInfo = exit_list[Node]
                 adjacentEdge = adjacentInfo.values()[0]
 
-                #make sure the road is not full and that it's not too soon to leave
+                #make sure the road is not full, there's cars in the parking lot, and that it's not too soon to leave
                 if (not adjacentEdge.isFull()) and (Node.time % timeToLeaveParkingLot == 0) and Node.capacity:
                     adjacentEdge.currentCap += 1
                     Node.capacity -= 1
@@ -73,7 +73,7 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 adjacentEdge = adjacentInfo.values()[0]
 
                 #make sure the road has cars and that it's not too soon to leave
-                if adjacentEdge.currentCap:
+                if adjacentEdge.currentCap > 0:
                     if (Node.time == 0):
                         adjacentEdge.currentCap -= 1
                         #The more crowded the road, the long it takes to exit
@@ -105,17 +105,15 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                         #Add to the heap
                         Node.heap.put(request)
 
+                    #look at the top work order and see if it's time is zero (aka execute it)
+                    content = Node.heap.get()
 
-                #look at the time stamps of the top request on the heap
-                content = Node.heap.get()
+                    #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
+                    if content.time <= 0:
+                        executeWorkRequestOrder(content)
 
-                #if the time stamp is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
-                if content.time == 0:
-                    executeWorkRequestOrder(content)
-                elif content.time <0:
-                    print "time less than zero"
-                else:
-                    Node.heap.put(content)
+                    else:
+                        Node.heap.put(content)
 
 
         #check if we're empty
