@@ -1,3 +1,4 @@
+from math import ceil
 import random
 import sys
 from Node import createMap, workRequest
@@ -74,12 +75,12 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 adjacentEdge = adjacentInfo.values()[0]
 
                 #make sure the road is not full and that it's not too soon to leave
-                if (not adjacentEdge.isFull()) and (Node.time % timeToEnterHighway == 0):
+                if (not adjacentEdge.isFull()) and (Node.time == 0):
                     adjacentEdge.currentCap -= 1
-                    #reset the time.  15 seconds til the next car can leave
-                    Node.time = 1
+                    #The more crowded the road, the long it takes to exit
+                    Node.time = ceil(timeToEnterHighway - (timeToEnterHighway - 1) * (1 - (abs(adjacentEdge.currentCap) / adjacentEdge.capacity)))
                 else:
-                    Node.time += 1
+                    Node.time -= 1
 
 
             #If there are cars in the queue, Make requests at a local heap
@@ -99,20 +100,16 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
             #Get the best choice for every path leading to the intersection(local optimi
             if not Node.isParkingLot:
                 choiceList = compute_heuristic(carsEntering, roadsLeaving, algorithm)
+                #if there is no possible way of moving, no choice list will be generated
                 if choiceList:
                     for request in choiceList:
-                        #print( "I am a request and my name is {}".format(request))
                         #Add to the heap
                         Node.heap.put(request)
 
                     #look at the heap contents
-
                     #Then update time
-                    #look at the heap contents
+    
                     content = Node.heap.get()
-                    # print("My cute tiny heap is {}".format(content))
-                    # print ""
-                    # print("Right now my time is {}".format(content.time))
                     #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
                     if content.time <= 0:
                         executeWorkRequestOrder(content)
@@ -187,7 +184,8 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
     '''
     if not carsEntering.values()[0].endVertex.isExit:
         """the above condition checks if we're at the exit.  If so, no intersection guidance is needed; it will be picked up by the clock cycle
-        #also, check to see if the road you choose is full"""
+        also, check to see if the road you choose is full"""
+
         if algorithm == "Police Officer":
             # Checking all possible paths
             work_list = []
