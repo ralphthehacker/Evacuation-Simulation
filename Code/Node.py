@@ -28,12 +28,13 @@ def createMap(filepath):
         distance = traffic_obj['Distance']
         direction = traffic_obj['Direction']
 
+
         #check if we've seen the vertex before
         if inter1 not in vertexList:
              #create the vertexes
              if ".parking" in inter1:
                   #randomely generate a certain number of cars in each parking lot
-                  vert1 = Parking_lot(inter1, randint(200, 300))
+                  vert1 = Parking_lot(inter1, randint(2, 3))
                   parkingLots.append(vert1)
              elif ".EXIT" in inter1:
                   vert1 = Node(inter1, True)
@@ -47,7 +48,7 @@ def createMap(filepath):
         #repeat the process for the other vertexes
         if inter2 not in vertexList:
             if ".parking" in inter2:
-                vert2 = Parking_lot(inter2, randint(200, 300))
+                vert2 = Parking_lot(inter2, randint(2, 3))
                 parkingLots.append(vert2)
             elif ".EXIT" in inter2:
                  vert2 = Node(inter2, True)
@@ -56,6 +57,7 @@ def createMap(filepath):
             vertexList[inter2] = vert2
         else:
             vert2 = vertexList[inter2]
+
 
         forwardEdge = Edge(vert1, vert2, distance, direction)
         backwardsEdge = Edge(vert2, vert1, distance, flipDirection(direction))
@@ -123,11 +125,13 @@ class Edge:
           self.startVertex = startVertex
           self.endVertex = endVertex
           self.direction = direction
-          self.capacity = ceil(distance / 4.5)
+          self.capacity = ceil(int(distance) / 4.5)
           self.currentCap = 0
 
      def isFull(self):
           return self.currentCap == self.capacity
+     def __repr__(self):
+        return self.startVertex.name + " to " + self.endVertex.name
 
 class Node:
 
@@ -143,8 +147,10 @@ class Node:
         self.isParkingLot = False
         self.isExit = isExit
         self.heap = PriorityQueue(0)
+        self.pastQueries = []
         self.time = 0
-
+    def __repr__(self):
+        return self.name
 class Parking_lot(Node):
 
      def __init__(self, name, capacity):
@@ -174,5 +180,7 @@ class workRequest:
           self.time = 20 + edge1.currentCap/edge1.capacity
      def __cmp(self,other):
      	return cmp(self.time,other.time)
+     def __repr__(self):
+         return repr(self.edge1) + " and " + repr(self.edge1) + " with time of {}".format(self.time)
 
 adj_list = createMap("../GTMap.csv")

@@ -12,7 +12,7 @@ You can also change the update time through the clock_tick_time parameter(defaul
 '''
 
 
-def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick_time=2):
+def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = False,clock_tick_time=2):
     # Adjacency lists are stored in the form Node, {adjacent nodes, edge between them}
 
 
@@ -39,11 +39,14 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
 
     #While the simulation is running
     while simulation_active:
-
+        print "--------------------------------------------------------------------------------------------------------"
+        print "new iteration"
+        print time
+        print "--------------------------------------------------------------------------------------------------------"
         # Check all nodes in the system first
         for Node in exit_list.keys():
             #update the time of all the work requests
-            updateWorkRequests(Node)
+            updateWorkRequests(Node,clock_tick_time)
 
 
             #update the parking lot behavior: exit if possible and update capacity
@@ -53,13 +56,14 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 adjacentEdge = adjacentInfo.values()[0]
 
                 #make sure the road is not full, there's cars in the parking lot, and that it's not too soon to leave
-                if (not adjacentEdge.isFull()) and (Node.time % timeToLeaveParkingLot == 0) and Node.capacity:
+                if (not adjacentEdge.isFull()) and (Node.time - timeToLeaveParkingLot >= 0) and Node.capacity:
                     adjacentEdge.currentCap += 1
                     Node.capacity -= 1
                     #reset the time.  15 seconds til the next car can leave
                     Node.time = 1
+                    print("A car just left the parking lot")
                 else:
-                    Node.time += 1
+                    Node.time += clock_tick_time
 
             #let the cars on the highway
 
@@ -75,11 +79,12 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 #make sure the road has cars and that it's not too soon to leave
                 if adjacentEdge.currentCap > 0:
                     if (Node.time == 0):
+                        print "A car just exited"
                         adjacentEdge.currentCap -= 1
                         #The more crowded the road, the long it takes to exit
                         Node.time = ceil(timeToEnterHighway - (timeToEnterHighway - 1) * (1 - (abs(adjacentEdge.currentCap) / adjacentEdge.capacity))) + 1
                     else:
-                        Node.time -= 1
+                        Node.time +=  clock_tick_time
 
 
             #If there are cars in the queue, Make requests at a local heap
@@ -102,22 +107,42 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
                 #if there is no possible way of moving, no choice list will be generated
                 if choiceList:
                     for request in choiceList:
+
                         #Add to the heap
-                        Node.heap.put(request)
+                        # Debugging
+                        if debug:
+                            if Node.name == "9thAndHempill":
+                                print "Node Name is {}".format(repr(Node))
+                                print("Query List:")
+                                print(Node.pastQueries)
+                                print "Requests"
+                                print request
+                                print ""
+
+                        if are_the_queries_equal(Node,request):
+                            continue
+                        elif request.edge1.currentCap > 0:
+                            Node.pastQueries.append(request)
+                            Node.heap.put(request)
 
                     #look at the top work order and see if it's time is zero (aka execute it)
                     content = Node.heap.get()
 
                     #if the time is equal to or less than zero, it's time to execute.  Else, put the order back in the queue
                     if content.time <= 0:
-                        executeWorkRequestOrder(content)
+                        executeWorkRequestOrder(Node,content)
 
                     else:
                         Node.heap.put(content)
 
 
+        if time%40 == 0:
+            monitor_nodes(edgeList,parkingLots)
         #check if we're empty
         numPeople = 0
+
+
+
         for edge in edgeList:
             numPeople += edge.currentCap
         for lot in parkingLots:
@@ -125,9 +150,9 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, clock_tick
         if numPeople <= 0:
             simulation_active = False
 
-
-        print"People left: ", numPeople, ". And the time so far: ", time, " seconds"
-        time += 1
+        if random.random() > 0.98:
+            print"People left: ", numPeople, ". And the time so far: ", time, " seconds"
+        time += clock_tick_time
     print time
 
 '''
@@ -140,20 +165,65 @@ Makes clock ticks in the heap
 '''
 
 
+
+def monitor_nodes(edge_list,p_lots):
+    print("*******************************")
+    print("Total count of cars:")
+    num_people = 0
+    print("")
+    print("*******************************")
+    for lot in p_lots:
+        print lot.name + ": " + str(lot.capacity)
+        num_people += lot.capacity
+
+    print("*******************************")
+    for edge in edge_list:
+        print repr(edge) + ": " + str(edge.currentCap)
+        num_people += edge.currentCap
+
+    print("*******************************")
+    print ""
+    print("THERE ARE {} PEOPLE IN THE SYSTEM!".format(num_people))
+    print("")
+    print("*******************************")
+
+
+    print("")
+
+
 def change_distribution(adj_list):
     pass
 
 
-def executeWorkRequestOrder(order):
+def executeWorkRequestOrder(Node,order,debug = False):
+
+    '''
+    THIS IS USED TO DRIVE CARS FROM ONE STREET TO THE OTHER
+    :param order:
+    :return:
+    '''
     #print "Car going from {} to {}".format(order.edge1,order.edge2)
     if (order.edge1.currentCap == 0):
-        print "work request coming from a road with zero cars"
+        #print("")
+        #print "work request coming from a road with zero cars"
+        Node.pastQueries.remove(order)
+        if debug:
+            print("{} Order was removed: null").format(order)
+        return
+    Node.pastQueries.remove(order)
+    print("{} Order was removed: Sucessful traffic").format(order)
     order.edge1.currentCap -= 1
     order.edge2.currentCap += 1
 
 
-def updateWorkRequests(Node):
+def updateWorkRequests(Node,clock):
 
+    '''
+    THIS IS USED TO LOOK INTO EVERY SINGLE INDIVIDUAL HEAP AND POP THE ORDERS
+:param Node:
+:param clock:
+:return:
+'''
     #make sure there's at least one element in the heap
     if Node.heap.queue:
         heap_list = []
@@ -163,7 +233,7 @@ def updateWorkRequests(Node):
 
         #And subtracting time from them
         for order in heap_list:
-            order.time -= 1
+            order.time -= clock
             if order.time <= 0:
                 order.time = 0
 
@@ -189,12 +259,20 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
             for enter_road in carsEntering.values():
                 #make sure the road isn't empty
 
-                #debug if
-                if enter_road.startVertex.name == "Frat.parking":
-                    if enter_road.currentCap < 0:
-                        print "the problem starts here"
 
-                if enter_road.currentCap > 0:
+                #debug if
+                if enter_road.currentCap < 0:
+                    print "the problem starts here"
+                    # print enter_road
+                    # print ""
+
+                # if enter_road.startVertex.name == "Frat.parking":
+                #     if enter_road.currentCap < 0:
+                #         print "the problem starts here"
+
+                if enter_road.currentCap == 0:
+                    continue
+                elif enter_road.currentCap > 0:
 
                     # Check the possible next paths for the least people in it
                     leastRatio = 1.0
@@ -251,10 +329,27 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm):
 def roadEligible(road):
     return not ( road.startVertex.isParkingLot) and road.currentCap < road.capacity
 
+
+
+def are_the_queries_equal(Node,work_request):
+    #Checks if the queries in a node are equal
+    flag = False
+    for requests in Node.pastQueries:
+        if (requests.edge1 == work_request.edge1) and (requests.edge2 == work_request.edge2):
+            flag = True
+            return flag
+    return flag
+
+
+
+
+
+
+
 def main():
     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv")
     #simulate(exiting_list, entering_list, edge_list, parkingLots, "chaos", clock_tick_time=2)
-    simulate(exiting_list, entering_list, edge_list, parkingLots, "Police Officer", clock_tick_time=2)
+    simulate(exiting_list, entering_list, edge_list, parkingLots, "Police Officer",debug=True,clock_tick_time=5)
 
 
 main()
