@@ -1,10 +1,12 @@
-from math import ceil
+from math import ceil, floor
 import random
 import sys
 from Node import createMap, workRequest
-
+import time
 __author__ = 'ralphblanes, lmoore44'
 import Queue
+import datetime
+
 
 '''
 This is the main simulation class. She'll take an adjacency list and run the simulation based on it.
@@ -31,18 +33,38 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
     simulation_active = True
 
     #Our time keeper variable
-    time = 0
+    iteration_timer = 0
 
-    #some constants
+    #some constants: in miliseconds
     timeToLeaveParkingLot = 10
     timeToEnterHighway = 20
+    people_escaped = 0
 
+
+    #Determining how many data displays we'll have
+    update = 0
+    for lot in parkingLots:
+        update += lot.capacity
+    #Basically just flooring to a a numbe in the format X000
+    STARTING_CAPACITY = update
+    update = 200*int(floor(float(update)/(10*len(str(update)))))
+
+    print "--------------------------------------------------------------------------------------------------------"
+    print "OH NO, ZOMBIES ARE ATTACKING GEORGIA TECH!"
+    time.sleep(1.5)
+    print "WE NEED TO EVACUATE THE CAMPUS IMMEDIATELY!"
+    time.sleep(1.5)
+    ##ADD DISTRIBUTION RELATED TEXT IN HERE
+    print "ARE YOU READY TO START?"
+    time.sleep(1.5)
+    print "--------------------------------------------------------------------------------------------------------"
     #While the simulation is running
     while simulation_active:
-        if time%500 == 0:
+        if iteration_timer%update == 0:
             print "--------------------------------------------------------------------------------------------------------"
-            print "new iteration"
-            print time
+            m, s = divmod(iteration_timer/50, 60)
+            h, m = divmod(m, 60)
+            print "Zombie invasion started %d:%02d:%02d ago" % (h, m, s)
             print "--------------------------------------------------------------------------------------------------------"
         # Check all nodes in the system first
         for Node in exit_list.keys():
@@ -59,8 +81,6 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                 adjacentInfo = exit_list[Node]
                 adjacentEdge = adjacentInfo.values()[0]
                 adjacent_edge_is_full = adjacentEdge.isFull()
-                if Node.name == "KlausStop" and len(Node.pastQueries)>0:
-                    a = 0
 
                 #make sure the road is not full, there's cars in the parking lot, and that it's not too soon to leave
                 if (not adjacentEdge.isFull()) and (Node.time <= 0) and Node.capacity:
@@ -68,7 +88,7 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                     Node.capacity -= 1
                     #reset the time.  15 seconds til the next car can leave
                     Node.time = 10
-                    print("A car just left the parking lot")
+                    #print("A car just left the parking lot")
                 else:
                     Node.time -= clock_tick_time
 
@@ -85,7 +105,7 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                 #make sure the road has cars and that it's not too soon to leave
                 if adjacentEdge.currentCap > 0:
                     if (Node.time <= 0):
-                        print "A car just exited"
+                        #print "A car just exited"
                         adjacentEdge.currentCap -= 1
                         #The more crowded the road, the long it takes to exit
                         Node.time = ceil(timeToEnterHighway - (timeToEnterHighway - 1) * (1 - (abs(adjacentEdge.currentCap) / adjacentEdge.capacity))) + 1
@@ -105,7 +125,7 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
             # """
             #Get the best choice for every path leading to the intersection(local optimi
             else:
-                if Node.name == "Centinial" and time >= 2000:
+                if Node.name == "Centinial" and iteration_timer >= 2000:
                     breakpoint = "AQUI CARALHO"
                 bool = False
                 roadsLeaving = exit_list[Node]
@@ -117,7 +137,7 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                 #Else, we process the current request
                 else:
                     #Debugging heuristic
-                    if Node.name == "Centinial" and time >= 2500:
+                    if Node.name == "Centinial" and iteration_timer >= 2500:
                         bool = False
                         for car in carsEntering.values():
                             if car.currentCap > 0:
@@ -150,62 +170,70 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                     else:
                         Node.heap.put(content)
 
-        if time%500 == 0:
-            if output == 'Clean':
-                monitor_nodes(edgeList,parkingLots,time,clean = True)
-            else:
-                monitor_nodes(edgeList,parkingLots,time,clean = False)
-        #check if we're empty
-        numPeople = 0
-        # for edge in edgeList:
-        #     if '.EXIT' in edge.endVertex.name and edge.currentCap != 0:
-        #         edge.currentCap -= 1
-        #         print 'A car just left GT through {}'.format(edge)
 
-
+        people_in_sim = 0
         for edge in edgeList:
-            numPeople += edge.currentCap
+            people_in_sim += edge.currentCap
         for lot in parkingLots:
-            numPeople += lot.capacity
-        if numPeople <= 0:
+            people_in_sim += lot.capacity
+        if people_in_sim <= 0:
             simulation_active = False
 
-        if time == 0:
-            print"People left: ", numPeople, ". And the time so far: ", time, " seconds"
-        time += clock_tick_time
-    print time
+        #Provides data visualization
+        if iteration_timer%update == 0:
+            people_escaped = STARTING_CAPACITY - people_in_sim
+            if output == 'Clean':
+                monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = True)
+            else:
+                monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = False)
+
+        # Keeps time running
+        iteration_timer += clock_tick_time
+
+    monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = False,endgame = True)
 
 
 
-def monitor_nodes(edge_list,p_lots,time,clean = True):
+def monitor_nodes(edge_list,p_lots,iteration_timer,escaped,starting_pop,clean = True,endgame = False):
     if clean:
         num_people = 0
         for edge in edge_list:
             num_people += edge.currentCap
         for lot in p_lots:
             num_people += lot.capacity
-        print"People left: ", num_people, ". And the time so far: ", time, " seconds"
+        print"People left: ", num_people, ". And the time so far: ", iteration_timer, " seconds"
 
     else:
-        print("*******************************")
-        print("Total count of cars:")
+        print("*******************************************************************BRIEFING************************************************************************")
+        print ""
+        print("Total count of cars: {}".format(starting_pop - escaped))
         num_people = 0
         print("")
-        print("*******************************")
+        print("*******************************************************************PARKING LOTS********************************************************************")
+        print("")
         for lot in p_lots:
             print lot.name + ": " + str(lot.capacity)
             num_people += lot.capacity
 
-        print("*******************************")
+        print("********************************************************************STREETS************************************************************************")
+        print""
         for edge in edge_list:
             print repr(edge) + ": " + str(edge.currentCap)
             num_people += edge.currentCap
 
-        print("*******************************")
+        print("********************************************************************STATUS************************************************************************")
+        m, s = divmod(iteration_timer/50, 60)
+        h, m = divmod(m, 60)
+        print "Zombie invasion started %d:%02d:%02d ago" % (h, m, s)
+        track = "%d HOURS,%02d MINUTES AND %02d SECONDS!" % (h, m, s)
         print ""
-        print("THERE ARE {} PEOPLE IN THE SYSTEM!".format(num_people))
+        if not endgame:
+            print("THERE ARE {} PEOPLE STILL TRAPPED WITH THE ZOMBIES!".format(num_people))
+        else:
+            print "CONGRATULATIONS! {} OF THE 21ST CENTURY'S FUTURE INNOVATORS ESCAPED THE FEROCIOUS ZOMBIES! ".format(starting_pop) +\
+                "IN ONLY {}".format(track)
         print("")
-    print("*******************************")
+    print("**************************************************************************************************************************************************")
 
 
     print("")
@@ -305,6 +333,7 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm,debug = False):
                     # Check the possible next paths for the least people in it
                     leastRatio = 1.0
                     best_exit = 0
+                    n_cars = 0
                     for dest_road in roadsLeaving.values():
                         #check if the raod is
                         if dest_road.direction.lower() != "west" and roadEligible(dest_road,enter_road):
@@ -323,8 +352,10 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm,debug = False):
 
                     #Get the fastest path (assuming one exists) and append it to the list of best choices
                     if best_exit:
-                        minRequest = workRequest(enter_road, best_exit)
-                        work_list.append(minRequest)
+                        n_cars = best_exit.currentCap
+                        for i in range(n_cars+1):
+                            minRequest = workRequest(enter_road, best_exit)
+                            work_list.append(minRequest)
                 elif enter_road.currentCap < 0:
                     print "negative car capacity"
         else:
@@ -385,7 +416,8 @@ def are_the_queries_equal(Node,work_request):
 
 
 def main():
-    (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv")
+    n_people = 1000
+    (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
     #simulate(exiting_list, entering_list, edge_list, parkingLots, "chaos", clock_tick_time=2)
     simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
              ,output='dirty')#'dirty')

@@ -6,13 +6,12 @@ import pandas
 from Queue import PriorityQueue
 from random import randint
 
-def createMap(filepath):
+def createMap(filepath,n_people):
     #parking lot nodes always ".parking" in the name
 
     #Processing data into a dataframe
      df = pandas.read_csv(filepath)
 
-     print df.columns.values
      exitingList = {}
      enteringList = {}
      vertexList = {}
@@ -34,7 +33,7 @@ def createMap(filepath):
              #create the vertexes
              if ".parking" in inter1:
                   #randomely generate a certain number of cars in each parking lot
-                  vert1 = Parking_lot(inter1, randint(200, 300))
+                  vert1 = Parking_lot(inter1, randint(n_people, n_people+ceil(n_people/10)))
                   parkingLots.append(vert1)
              elif ".EXIT" in inter1:
                   vert1 = Node(inter1, True)
@@ -48,7 +47,7 @@ def createMap(filepath):
         #repeat the process for the other vertexes
         if inter2 not in vertexList:
             if ".parking" in inter2:
-                vert2 = Parking_lot(inter2, randint(200, 300))
+                vert2 = Parking_lot(inter2, randint(n_people, n_people+ceil(n_people/10)))
                 parkingLots.append(vert2)
             elif ".EXIT" in inter2:
                  vert2 = Node(inter2, True)
@@ -185,4 +184,3 @@ class workRequest:
      def __repr__(self):
          return repr(self.edge1) + " and " + repr(self.edge2) + " with time of {}".format(self.time)
 
-adj_list = createMap("../GTMap.csv")

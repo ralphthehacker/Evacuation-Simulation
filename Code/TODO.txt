@@ -1,4 +1,16 @@
+About the model:
+
+    A lot of the cars get stuck in the parking lots and stay there for hours. That's weird.
+    Also, several streets are completely empty while others are filled up. This looks kinda alike
+    to Sao Paulo traffic jams, where the main streets are 100% filled and the arterial streets are
+    close to empty
+
+
+
+
 What next:
+
+
 
 -Add a data visualization module to this class or copy a data structure onto processing
 -Add another algorithm?
