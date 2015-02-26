@@ -3,7 +3,13 @@ About the model:
     A lot of the cars get stuck in the parking lots and stay there for hours. That's weird.
     Also, several streets are completely empty while others are filled up. This looks kinda alike
     to Sao Paulo traffic jams, where the main streets are 100% filled and the arterial streets are
-    close to empty
+    close to empty.
+
+    CORRECTION:
+        DUH! No traffic jam whatsoever takes people 20 seconds to leave a parking lot or cross an intersection.
+        I've seen traffic jams with more than 50k cars in Sao Paulo taking around 5hours, so I'm reducing the
+        baseline time of the model
+
 
 
 

@@ -1,5 +1,6 @@
 from math import ceil, floor
 import random
+import numpy.random as np_random
 import sys
 from Node import createMap, workRequest
 import time
@@ -23,9 +24,6 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
     '''
 
 
-    #preprocessing step: Allows us to change the distribution of cars in an adjacency list
-    change_distribution(0)
-
     # We're putting all the requests in here to update them. The priority queue is a min_heap
     request_time_heap = Queue.PriorityQueue()
 
@@ -45,9 +43,13 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
     update = 0
     for lot in parkingLots:
         update += lot.capacity
-    #Basically just flooring to a a numbe in the format X000
+    #Basically just flooring to a a number in the format X000
     STARTING_CAPACITY = update
     update = 200*int(floor(float(update)/(10*len(str(update)))))
+
+
+    #preprocessing step: Allows us to change the distribution of cars in an adjacency list
+    change_distribution(parkingLots,exponential=True,sample_size= STARTING_CAPACITY)
 
     print "--------------------------------------------------------------------------------------------------------"
     print "OH NO, ZOMBIES ARE ATTACKING GEORGIA TECH!"
@@ -80,22 +82,21 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                 #find the adjacent road
                 adjacentInfo = exit_list[Node]
                 adjacentEdge = adjacentInfo.values()[0]
-                adjacent_edge_is_full = adjacentEdge.isFull()
 
                 #make sure the road is not full, there's cars in the parking lot, and that it's not too soon to leave
                 if (not adjacentEdge.isFull()) and (Node.time <= 0) and Node.capacity:
+                    #Move one car from the parking lot to its adjacent Node
                     adjacentEdge.currentCap += 1
                     Node.capacity -= 1
-                    #reset the time.  15 seconds til the next car can leave
+                    #reset the time.  0.1 seconds til the next car can leave
                     Node.time = 10
-                    #print("A car just left the parking lot")
+
                 else:
                     Node.time -= clock_tick_time
 
             #let the cars on the highway
             elif Node.isExit:
-                # print "I am an exit"
-                # print "My name is {}".format(Node)
+
 
                 #find the adjacent road
                 adjacentInfo = enter_list[Node]
@@ -105,28 +106,23 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                 #make sure the road has cars and that it's not too soon to leave
                 if adjacentEdge.currentCap > 0:
                     if (Node.time <= 0):
-                        #print "A car just exited"
+                        #remove one car from the map
                         adjacentEdge.currentCap -= 1
-                        #The more crowded the road, the long it takes to exit
                         Node.time = ceil(timeToEnterHighway - (timeToEnterHighway - 1) * (1 - (abs(adjacentEdge.currentCap) / adjacentEdge.capacity))) + 1
                     else:
                         Node.time -=  clock_tick_time
             #If there are cars in the queue, Make requests at a local heap
 
 
-            # print "Those are getting inside of me".format(carsEntering)
-            # print("")
-            # print "I'm spitting these".format(roadsLeaving)
+
             #
-            # """Call heuristic to file work requests.
+            #Call heuristic to file work requests.
             # Then, we check to see if any work request can be fullfiled by "peeking" at the top of the heap and seeing if a time reaches zero
             # Assuming at least one does reach zero, we execute exactly one work request.
             # Don't forget to update all the work requests at each iteation by calling update_heap(or a modified version)
-            # """
-            #Get the best choice for every path leading to the intersection(local optimi
+            #
+            #Get the best choice for every path leading to the intersection
             else:
-                if Node.name == "Centinial" and iteration_timer >= 2000:
-                    breakpoint = "AQUI CARALHO"
                 bool = False
                 roadsLeaving = exit_list[Node]
                 carsEntering = enter_list[Node]
@@ -136,25 +132,13 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                     choiceList = compute_heuristic(carsEntering, roadsLeaving, algorithm,debug = bool)
                 #Else, we process the current request
                 else:
-                    #Debugging heuristic
-                    if Node.name == "Centinial" and iteration_timer >= 2500:
-                        bool = False
-                        for car in carsEntering.values():
-                            if car.currentCap > 0:
-                                bool = True
-                        if bool:
-                            breakpoint = "AQUI DE NOVO PORRA"
-
                     choiceList = Node.pastQueries
-                #if there is no possible way of moving, no choice list will be generated
+                # Get the possible choices and process them
                 if choiceList:
                     for request in choiceList:
-                        """
-                        TODO:   Cars are either getting stuck on exit without being processed or they are getting
-                        back to the parking lots and getting stuck
-                        """
                         #Add to the heap
                         if are_the_queries_equal(Node,request):
+                            #Debugging statement that covers against repeated equal requests
                             breakpoint = "another"
                         elif request.edge1.currentCap > 0 :
                             Node.pastQueries.append(request)
@@ -171,7 +155,9 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
                         Node.heap.put(content)
 
 
+        #Check and count the number of people that are being harassed by zombies. If everyone escaped then the simulation is over
         people_in_sim = 0
+        #The number of people in the simulation is the sum of all cars in the parking lots + people in the
         for edge in edgeList:
             people_in_sim += edge.currentCap
         for lot in parkingLots:
@@ -195,6 +181,9 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
 
 
 def monitor_nodes(edge_list,p_lots,iteration_timer,escaped,starting_pop,clean = True,endgame = False):
+    #Pretty obvious code. Allows you to visualize the data
+    #Clean just returns brief statements about the model's status
+
     if clean:
         num_people = 0
         for edge in edge_list:
@@ -230,6 +219,7 @@ def monitor_nodes(edge_list,p_lots,iteration_timer,escaped,starting_pop,clean = 
         if not endgame:
             print("THERE ARE {} PEOPLE STILL TRAPPED WITH THE ZOMBIES!".format(num_people))
         else:
+            #Larry will probably hate this print statement :*
             print "CONGRATULATIONS! {} OF THE 21ST CENTURY'S FUTURE INNOVATORS ESCAPED THE FEROCIOUS ZOMBIES! ".format(starting_pop) +\
                 "IN ONLY {}".format(track)
         print("")
@@ -239,8 +229,11 @@ def monitor_nodes(edge_list,p_lots,iteration_timer,escaped,starting_pop,clean = 
     print("")
 
 
-def change_distribution(adj_list):
+def change_distribution(parking_lots,exponential = False,sample_size = 100):
+    #TODO MAKE AN EXPONENTIAL WHEN MY BRAIN RECOVERS FROM TODAY'S FRYING
     pass
+
+
 
 
 def executeWorkRequestOrder(Node,order,debug = False):
@@ -251,28 +244,15 @@ def executeWorkRequestOrder(Node,order,debug = False):
     :return:
     '''
 
-    #print "Car going from {} to {}".format(order.edge1,order.edge2)
+    #Covering against null orders
     if (order.edge1.currentCap == 0):
-        #print("")
-        #print "work request coming from a road with zero cars"
         Node.pastQueries.remove(order)
-    # if (order.edge2.currentCap == 0 and not(order.edge1.startVertex.isParkingLot)):
-    #     #print("")
-    #     #print "work request coming from a road with zero cars"
-    #     Node.pastQueries.remove(order)
-    #     if debug:
-    #         print("{} Order was removed: null").format(order)
-    #         print "{} is returning here".format(order)
-    #     return
-    # if ('.EXIT' in order.edge2.name):
-    #     print  "{} just arrived in an exit".format(order)
-    # if ('.parking' in order.edge2.name):
-    #     print  "{} just backtracked to a parking lot".format(order)
+    #Debugging statement. Turn debug on if anything's getting messed up
     if debug:
         print "I got past the first two if statements"
     Node.pastQueries.remove(order)
     if debug:
-        print("{} Order was removed: Sucessful traffic").format(order)
+        print("{} Order was removed: Successful traffic").format(order)
     order.edge1.currentCap -= 1
     order.edge2.currentCap += 1
 
@@ -323,19 +303,14 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm,debug = False):
             # For any given entering path
             for enter_road in carsEntering.values():
                 #make sure the road isn't empty
-                #debug if
-                if enter_road.currentCap < 0:
-                    print "the problem starts here"
 
-                elif enter_road.currentCap > 0:
-
-
+                if enter_road.currentCap > 0:
                     # Check the possible next paths for the least people in it
                     leastRatio = 1.0
                     best_exit = 0
                     n_cars = 0
                     for dest_road in roadsLeaving.values():
-                        #check if the raod is
+                        #check if the road is travellable
                         if dest_road.direction.lower() != "west" and roadEligible(dest_road,enter_road):
                             #check if this road is less empty. This calculation prefers longer, emptier roads
                             if dest_road.currentCap/dest_road.capacity < leastRatio:
@@ -391,7 +366,7 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm,debug = False):
 
     return 0
 
-#checks if the road contains a parking lot or is full
+#checks if the road contains a parking lot, if it is full or if it's cycling back and forth
 def roadEligible(dest_road,start_road):
     return not ( dest_road.startVertex.isParkingLot) and dest_road.currentCap < dest_road.capacity \
     and (start_road.startVertex.name != dest_road.endVertex.name)
@@ -401,7 +376,7 @@ def roadEligible(dest_road,start_road):
 
 
 def are_the_queries_equal(Node,work_request):
-    #Checks if the queries in a node are equal
+    #Checks if the queries in a node are equal ..... #noShitSherlock
     flag = False
     for requests in Node.pastQueries:
         if (requests.edge1 == work_request.edge1) and (requests.edge2 == work_request.edge2):
@@ -418,24 +393,9 @@ def are_the_queries_equal(Node,work_request):
 def main():
     n_people = 1000
     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
-    #simulate(exiting_list, entering_list, edge_list, parkingLots, "chaos", clock_tick_time=2)
     simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
              ,output='dirty')#'dirty')
 
 
 main()
 
-
- #         work_order = workRequest(enter_road, dest_road)
-                #         temp_list.append(work_order)
-                #
-                # #Sort to get the fastest path
-                # #temp_list = sorted(work_list, key=lambda x: x.time, reverse=False)
-                # minTime = sys.maxint
-                # minRequest = 0
-                # for request in temp_list:
-                #     if request.time < minTime:
-                #         minTime = request.time
-                #         minRequest = request
-                # if not minRequest:
-                #     print False
