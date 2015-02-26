@@ -130,6 +130,7 @@ class Edge:
 
      def isFull(self):
           return self.currentCap == self.capacity
+
      def __repr__(self):
         return self.startVertex.name + " to " + self.endVertex.name
 
@@ -157,7 +158,8 @@ class Parking_lot(Node):
           self.name = name
           self.isParkingLot = True
           self.capacity = capacity
-          self.time = 0
+          self.pastQueries = []
+          self.time = 10
           self.heap = PriorityQueue(0)
           self.isExit = False
 
@@ -177,10 +179,10 @@ class workRequest:
      def __init__(self,edge1, edge2):
           self.edge1 = edge1
           self.edge2 = edge2
-          self.time = 20 + edge1.currentCap/edge1.capacity
+          self.time = 20 + 12*edge1.currentCap/edge1.capacity
      def __cmp(self,other):
      	return cmp(self.time,other.time)
      def __repr__(self):
-         return repr(self.edge1) + " and " + repr(self.edge1) + " with time of {}".format(self.time)
+         return repr(self.edge1) + " and " + repr(self.edge2) + " with time of {}".format(self.time)
 
 adj_list = createMap("../GTMap.csv")
