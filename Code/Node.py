@@ -34,7 +34,7 @@ def createMap(filepath):
              #create the vertexes
              if ".parking" in inter1:
                   #randomely generate a certain number of cars in each parking lot
-                  vert1 = Parking_lot(inter1, randint(2, 3))
+                  vert1 = Parking_lot(inter1, randint(200, 300))
                   parkingLots.append(vert1)
              elif ".EXIT" in inter1:
                   vert1 = Node(inter1, True)
@@ -48,7 +48,7 @@ def createMap(filepath):
         #repeat the process for the other vertexes
         if inter2 not in vertexList:
             if ".parking" in inter2:
-                vert2 = Parking_lot(inter2, randint(2, 3))
+                vert2 = Parking_lot(inter2, randint(200, 300))
                 parkingLots.append(vert2)
             elif ".EXIT" in inter2:
                  vert2 = Node(inter2, True)

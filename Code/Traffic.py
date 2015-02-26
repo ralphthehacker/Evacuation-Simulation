@@ -175,15 +175,6 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
         time += clock_tick_time
     print time
 
-'''
-CHECK HERE FOR POSSIBLE BUGS. PYTHON may copy objects instead of keeping pointers
-'''
-
-
-'''
-Makes clock ticks in the heap
-'''
-
 
 
 def monitor_nodes(edge_list,p_lots,time,clean = True):

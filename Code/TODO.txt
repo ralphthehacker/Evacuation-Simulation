@@ -1,0 +1,5 @@
+What next:
+
+-Add a data visualization module to this class or copy a data structure onto processing
+-Add another algorithm?
+-Write report
