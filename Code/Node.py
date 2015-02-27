@@ -4,13 +4,17 @@ __author__ = 'ralphblanes, lawrencemoore'
 #from SimPy.Simulation import *
 import pandas
 from Queue import PriorityQueue
-from random import randint
+from random import randint,expovariate
 
-def createMap(filepath,n_people):
+def createMap(filepath,n_people,distribution = 'normal'):
     #parking lot nodes always ".parking" in the name
 
     #Processing data into a dataframe
      df = pandas.read_csv(filepath)
+     if distribution == 'normal':
+         is_exponential = False
+     else:
+         is_exponential = True
 
      exitingList = {}
      enteringList = {}
@@ -33,8 +37,12 @@ def createMap(filepath,n_people):
              #create the vertexes
              if ".parking" in inter1:
                   #randomely generate a certain number of cars in each parking lot
-                  vert1 = Parking_lot(inter1, randint(n_people, n_people+ceil(n_people/10)))
-                  parkingLots.append(vert1)
+                if is_exponential:
+                    exp_var = int(1000000*(expovariate(n_people)))
+                    vert1 = Parking_lot(inter1, exp_var)
+                else:
+                    vert1 = Parking_lot(inter1, randint(n_people, n_people+ceil(n_people/10)))
+                parkingLots.append(vert1)
              elif ".EXIT" in inter1:
                   vert1 = Node(inter1, True)
              else:
@@ -47,7 +55,11 @@ def createMap(filepath,n_people):
         #repeat the process for the other vertexes
         if inter2 not in vertexList:
             if ".parking" in inter2:
-                vert2 = Parking_lot(inter2, randint(n_people, n_people+ceil(n_people/10)))
+                if is_exponential:
+                    exp_var = int(1000000*(expovariate(n_people)))
+                    vert2 = Parking_lot(inter2, exp_var)
+                else:
+                    vert2 = Parking_lot(inter2, randint(n_people, n_people+ceil(n_people/10)))
                 parkingLots.append(vert2)
             elif ".EXIT" in inter2:
                  vert2 = Node(inter2, True)
@@ -178,9 +190,9 @@ class workRequest:
      def __init__(self,edge1, edge2):
           self.edge1 = edge1
           self.edge2 = edge2
-          self.time = 20 + 12*edge1.currentCap/edge1.capacity
+          self.time = 20 + 12 * edge1.currentCap/edge1.capacity
      def __cmp(self,other):
-     	return cmp(self.time,other.time)
+     	return cmp(self.time, other.time)
      def __repr__(self):
          return repr(self.edge1) + " and " + repr(self.edge2) + " with time of {}".format(self.time)
 
