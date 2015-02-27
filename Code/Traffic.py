@@ -1,5 +1,7 @@
+import copy
 from math import ceil, floor
 import random
+import threading
 import numpy.random as np_random
 import sys
 from Node import createMap, workRequest
@@ -62,7 +64,6 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
     print "--------------------------------------------------------------------------------------------------------"
     #While the simulation is running
     while simulation_active:
-        print "hello"
         if iteration_timer%update == 0:
             print "--------------------------------------------------------------------------------------------------------"
             m, s = divmod(iteration_timer/50, 60)
@@ -348,14 +349,14 @@ def compute_heuristic(carsEntering, roadsLeaving, algorithm,debug = False):
             if canGoEast and not eastRoad.isFull():
                 #Now we file a work request for each road
                 for incomingCar in carsEntering.values():
-                    work_list.append(workRequest(incomingCar, eastRoad))
+                    if incomingCar.currentCap > 0:
+                        work_list.append(workRequest(incomingCar, eastRoad))
 
             #check if we can't go east at all
             elif not canGoEast:
                 numOptions = roadsLeaving.values()
                 for car in carsEntering.values():
-                    if car.capacity > 0:
-
+                    if car.currentCap > 0:
                         #randomely pick between north or south
                         exit = numOptions[random.randint(0,len(numOptions)-1)]
                         work_list.append(workRequest(car, exit))
@@ -396,6 +397,9 @@ def main():
     n_people = 1000
     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
     simulate(exiting_list, entering_list, edge_list, parkingLots, "Greedy",debug=True,clock_tick_time=10
+             ,output='dirty')#'dirty')
+    (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
+    simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
              ,output='dirty')#'dirty')
 
 
