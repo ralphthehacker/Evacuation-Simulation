@@ -1,7 +1,7 @@
 import copy
 from math import ceil, floor
 import random
-import threading
+import matplotlib.pyplot as plt
 import numpy.random as np_random
 import sys
 from Node import createMap, workRequest
@@ -52,6 +52,10 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
 
     #preprocessing step: Allows us to change the distribution of cars in an adjacency list
     change_distribution(parkingLots,exponential=True,sample_size= STARTING_CAPACITY)
+
+    #Keep track of change
+    oldNumPeople = 0
+    rateOfChange = []
 
     print "--------------------------------------------------------------------------------------------------------"
     print "OH NO, ZOMBIES ARE ATTACKING GEORGIA TECH!"
@@ -164,22 +168,27 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
             people_in_sim += edge.currentCap
         for lot in parkingLots:
             people_in_sim += lot.capacity
+
+        #check if everyone is gone
         if people_in_sim <= 0:
             simulation_active = False
+
+        rateOfChange.append(oldNumPeople - people_in_sim)
+        oldNumPeople = people_in_sim
 
         #Provides data visualization
         if iteration_timer%update == 0:
             people_escaped = STARTING_CAPACITY - people_in_sim
-            if output == 'Clean':
-                monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = True)
-            else:
-                monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = False)
+            # if output == 'Clean':
+            #     monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = True)
+            # else:
+            #     monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = False)
 
         # Keeps time running
         iteration_timer += clock_tick_time
 
     monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = False,endgame = True)
-
+    return iteration_timer
 
 
 def monitor_nodes(edge_list,p_lots,iteration_timer,escaped,starting_pop,clean = True,endgame = False):
@@ -394,14 +403,74 @@ def are_the_queries_equal(Node,work_request):
 
 
 def main():
-    n_people = 1000
-    (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
-    simulate(exiting_list, entering_list, edge_list, parkingLots, "Greedy",debug=True,clock_tick_time=10
-             ,output='dirty')#'dirty')
-    (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
-    simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
-             ,output='dirty')#'dirty')
+    compareGaussianAndExponential()
 
+def findConfidenceIntervalData():
+    n_people = 800
+    # (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
+    # simulate(exiting_list, entering_list, edge_list, parkingLots, "Greedy",debug=True,clock_tick_time=10
+    #          ,output='dirty')#'dirty')
+
+    numberOfRuns = 15
+    timeNeededOfficerList =[]
+    for i in range(0,numberOfRuns):
+        (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
+        timeNeededOfficerList.append(simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
+                 ,output='dirty'))
+
+    timeDifferentList = []
+    timeGreedyList = []
+    for i in range(0,numberOfRuns):
+        (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
+        greedyTime = (simulate(exiting_list, entering_list, edge_list, parkingLots, "Greedy",debug=True,clock_tick_time=10
+                 ,output='dirty'))
+        officerTime = timeNeededOfficerList[i]
+        timeGreedyList.append(greedyTime)
+        timeDifferentList.append(greedyTime - officerTime)
+
+    print "timeDifferentList: ", timeDifferentList
+    print "timeGreedyList: ", timeGreedyList
+    print "Police officer time list: ", timeNeededOfficerList
+
+def compareGaussianAndExponential():
+    n_people = 800
+    numberOfRuns = 5
+    times =[]
+    temp = []
+
+    # #run with normal distribution
+    # for i in range(0,numberOfRuns):
+    #     (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people, 'normal')
+    #     temp.append(simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
+    #              ,output='dirty'))
+    # times.append(temp)
+
+    #run with exponential distribution
+    temp = []
+    for i in range(0,numberOfRuns):
+        (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people, 'exponential')
+        people = 0
+        for lot in parkingLots:
+            people += lot.capacity
+        #if people > 14000 and people < 15000:
+            temp.append(simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
+                 ,output='dirty'))
+    times.append(temp)
+    print "[ [five times for gaussian], [five times for exponential] ]: ", times
+
+def compareNumCarsToEvacTime():
+    n_people = 200
+    numberOfRuns = 5
+    times =[]
+    while n_people <= 1000:
+        temp = []
+        for i in range(0,numberOfRuns):
+            (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
+            temp.append(simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
+                     ,output='dirty'))
+        times.append(temp)
+        n_people += 200
+    print "[ [200 people], [400 people], [600 people], [800 people], [1000 people]]: ", times
 
 main()
 
