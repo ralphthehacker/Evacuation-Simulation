@@ -179,10 +179,10 @@ def simulate(exit_list, enter_list, edgeList, parkingLots, algorithm, debug = Fa
         #Provides data visualization
         if iteration_timer%update == 0:
             people_escaped = STARTING_CAPACITY - people_in_sim
-            # if output == 'Clean':
-            #     monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = True)
-            # else:
-            #     monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = False)
+            if output == 'Clean':
+                monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = True)
+            else:
+                monitor_nodes(edgeList,parkingLots,iteration_timer,people_escaped,STARTING_CAPACITY,clean = False)
 
         # Keeps time running
         iteration_timer += clock_tick_time
@@ -403,15 +403,22 @@ def are_the_queries_equal(Node,work_request):
 
 
 def main():
-    compareGaussianAndExponential()
+    n_people = 800
+
+    numberOfRuns = 5
+    timeNeededOfficerList = []
+    for i in range(0,numberOfRuns):
+        (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
+        timeNeededOfficerList.append(simulate(exiting_list, entering_list, edge_list, parkingLots, "UGA Officer",debug=True,clock_tick_time=10
+                 ,output='dirty'))
+
+    #compareNumCarsToEvacTime()
+    #findConfidenceIntervalData()
 
 def findConfidenceIntervalData():
     n_people = 800
-    # (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
-    # simulate(exiting_list, entering_list, edge_list, parkingLots, "Greedy",debug=True,clock_tick_time=10
-    #          ,output='dirty')#'dirty')
 
-    numberOfRuns = 15
+    numberOfRuns = 5
     timeNeededOfficerList =[]
     for i in range(0,numberOfRuns):
         (exiting_list, entering_list, edge_list, parkingLots) = createMap("../GTMap.csv",n_people)
@@ -460,7 +467,7 @@ def compareGaussianAndExponential():
 
 def compareNumCarsToEvacTime():
     n_people = 200
-    numberOfRuns = 5
+    numberOfRuns = 1
     times =[]
     while n_people <= 1000:
         temp = []
