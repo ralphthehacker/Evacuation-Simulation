@@ -4,4 +4,4 @@ So as it stands now, we have our code divided into to different files.  One file
 
 In the main file, traffic.py, the actualy modeling method is present.  Here, the simulation process is effectively split up into three parts: exiting the parking lot, handling intersections, and exiting onto the highway.  We did our best to comment as much as possible to demonstrate which parts have which function.  Our heuristic functions to determine how the intersections are traversed are present at the bottom, along with other supporting methods that help the simulation run smoothly.  
 
-All code should be full functioning, with the exception of running the exponential distribution, which was has some slight bugs.  
+All code should be full functioning, with the exception of running the simulation with an exponential distribution, which was has some slight bugs.  
