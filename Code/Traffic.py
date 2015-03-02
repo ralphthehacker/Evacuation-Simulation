@@ -440,7 +440,7 @@ def findConfidenceIntervalData():
     print "Police officer time list: ", timeNeededOfficerList
 
 def compareGaussianAndExponential():
-	"""Note: not quite working"""
+    """Note: not quite working"""
     n_people = 800
     numberOfRuns = 5
     times =[]
