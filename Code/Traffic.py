@@ -388,7 +388,7 @@ def eastRoadEligible(dest_road):
 
 
 def are_the_queries_equal(Node,work_request):
-    #Checks if the queries in a node are equal ..... #noShitSherlock
+    #Checks if the queries in a node are equal
     flag = False
     for requests in Node.pastQueries:
         if (requests.edge1 == work_request.edge1) and (requests.edge2 == work_request.edge2):
@@ -440,6 +440,7 @@ def findConfidenceIntervalData():
     print "Police officer time list: ", timeNeededOfficerList
 
 def compareGaussianAndExponential():
+	"""Note: not quite working"""
     n_people = 800
     numberOfRuns = 5
     times =[]
